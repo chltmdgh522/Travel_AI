@@ -6,8 +6,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 
 from django.contrib.auth import views as auth_views
-from users.views import CustomLoginView, ResetPasswordView, ChangePasswordView, travel_view, plan_view, save_response
-
+from users.views import CustomLoginView, ResetPasswordView, ChangePasswordView, travel_view, plan_view, save_response, recommend_view
 from users.forms import LoginForm
 
 urlpatterns = [
@@ -38,10 +37,9 @@ urlpatterns = [
 
     path('travel/plan', plan_view, name='plan'),
 
-
+    path('recommend', recommend_view, name='recommend'),
 
     path('travel', travel_view, name='travel'),
-    path('save_response', save_response, name='save_response'),
 
 
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

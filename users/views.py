@@ -1,3 +1,5 @@
+from audioop import reverse
+
 from django.shortcuts import render, redirect
 from django.urls import reverse_lazy
 from django.contrib.auth.views import LoginView, PasswordResetView, PasswordChangeView
@@ -107,9 +109,21 @@ def travel_view(request):
         # 업데이트된 모델 저장
         travel_response.save()
 
-        return redirect('travel')  # 저장 후 여행 폼으로 리디렉션
+
+        return redirect('recommend')
 
     return render(request, 'travel/travel.html', {'travel_response': travel_response})
+@login_required
+def recommend_view(request):
+    try:
+        travel_response = TravelResponse.objects.get(user=request.user)  # 관련 이름이 'travelresponse'인 경우
+    except TravelResponse.DoesNotExist:
+        # 사용자에 대한 TravelResponse가 없는 경우 처리
+        travel_response = None
+
+    csv_file_path = r'C:\Users\chltm\PycharmProjects\djangoProject1\Django-registration-and-login-system\통합문서1.csv'
+    return render(request, 'travel/recommend.html',{'travel_response': travel_response})
+
 @login_required
 def plan_view(request):
     return render(request, 'travel/plan.html')
@@ -138,7 +152,7 @@ def save_response(request):
         # 업데이트된 모델 저장
         travel_response.save()
 
-        return redirect('travel')  # 저장 후 여행 폼으로 리디렉션
+        return redirect('/')  # 저장 후 여행 폼으로 리디렉션
 
     # POST 요청이 아니면 다른 처리 또는 에러 핸들링이 필요할 수 있습니다.
     return redirect('travel')  # 일단은 여행 폼으로 리디렉션

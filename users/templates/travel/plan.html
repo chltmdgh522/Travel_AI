@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Travel Recommendation Form</title>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <style>
         /* 추가적인 스타일링을 위한 CSS를 여기에 추가하세요 */
         body {
@@ -44,10 +44,10 @@
             <div class="form-group">
                 <label for="country">1. 여행 떠나고 싶은 중남미 나라:</label>
                 <div></div>
-                <input type="radio" class="form-check-input" name="country" value="메시">
-                <label class="form-check-label" for="country">메시</label>
-                <input type="radio" class="form-check-input" name="country" value="네이마르">
-                <label class="form-check-label" for="country">네이마르</label>
+                <input type="radio" class="form-check-input" name="country" value="메시" id="country1">
+                <label class="form-check-label" for="country1">메시</label>
+                <input type="radio" class="form-check-input" name="country" value="네이마르" id="country2">
+                <label class="form-check-label" for="country2">네이마르</label>
                 <!-- 다른 나라들에 대한 라디오 버튼 추가 -->
             </div>
 
@@ -55,26 +55,27 @@
             <div class="form-group">
                 <label>2. 여행 기간:</label>
                 <div></div>
-                <input type="radio" class="form-check-input" name="duration" value="단기 여행">
-                <label class="form-check-label" for="duration">단기 여행</label>
-                <input type="radio" class="form-check-input" name="duration" value="장기 여행">
-                <label class="form-check-label" for="duration">장기 여행</label>
+                <input type="radio" class="form-check-input" name="duration" value="단기 여행" id="duration1">
+                <label class="form-check-label" for="duration1">단기 여행</label>
+
+                <input type="radio" class="form-check-input" name="duration" value="장기 여행" id="duration2">
+                <label class="form-check-label" for="duration2">장기 여행</label>
             </div>
 
             <!-- 3번째 질문: 누구랑 떠나는가 -->
             <div class="form-group">
                 <label>3. 누구랑 떠나는가:</label>
                 <div></div>
-                <input type="radio" class="form-check-input" name="companions" value="혼자">
-                <label class="form-check-label" for="companions">혼자</label>
-                <input type="radio" class="form-check-input" name="companions" value="친구">
-                <label class="form-check-label" for="companions">친구</label>
-                <input type="radio" class="form-check-input" name="companions" value="연인">
-                <label class="form-check-label" for="companions">연인</label>
-                <input type="radio" class="form-check-input" name="companions" value="부모님">
-                <label class="form-check-label" for="companions">부모님</label>
-                <input type="radio" class="form-check-input" name="companions" value="배우자">
-                <label class="form-check-label" for="companions">배우자</label>
+                <input type="radio" class="form-check-input" name="companions" value="혼자" id="companions1">
+                <label class="form-check-label" for="companions1">혼자</label>
+                <input type="radio" class="form-check-input" name="companions" value="친구" id="companions2">
+                <label class="form-check-label" for="companions2">친구</label>
+                <input type="radio" class="form-check-input" name="companions" value="연인" id="companions3">
+                <label class="form-check-label" for="companions3">연인</label>
+                <input type="radio" class="form-check-input" name="companions" value="부모님" id="companions4">
+                <label class="form-check-label" for="companions4">부모님</label>
+                <input type="radio" class="form-check-input" name="companions" value="배우자" id="companions5">
+                <label class="form-check-label" for="companions5">배우자</label>
                 <!-- 다른 선택지에 대한 라디오 버튼 추가 -->
             </div>
 
@@ -82,18 +83,18 @@
             <div class="form-group">
                 <label>4. 선호하는 여행 스타일:</label>
                 <div></div>
-                <input type="radio" class="form-check-input" name="travel_style" value="SNS 핫플레이스">
-                <label class="form-check-label" for="travel_style">SNS 핫플레이스</label>
-                <input type="radio" class="form-check-input" name="travel_style" value="자연과 함께">
-                <label class="form-check-label" for="travel_style">자연과 함께</label>
-                <input type="radio" class="form-check-input" name="travel_style" value="먹방">
-                <label class="form-check-label" for="travel_style">먹방</label>
-                <input type="radio" class="form-check-input" name="travel_style" value="관광">
-                <label class="form-check-label" for="travel_style">관광</label>
-                <input type="radio" class="form-check-input" name="travel_style" value="문화">
-                <label class="form-check-label" for="travel_style">문화</label>
-                <input type="radio" class="form-check-input" name="travel_style" value="역사">
-                <label class="form-check-label" for="travel_style">역사</label>
+                <input type="radio" class="form-check-input" name="travel_style" value="SNS 핫플레이스" id="travel_style1">
+                <label class="form-check-label" for="travel_style1">SNS 핫플레이스</label>
+                <input type="radio" class="form-check-input" name="travel_style" value="자연과 함께" id="travel_style2">
+                <label class="form-check-label" for="travel_style2">자연과 함께</label>
+                <input type="radio" class="form-check-input" name="travel_style" value="먹방" id="travel_style3">
+                <label class="form-check-label" for="travel_style3">먹방</label>
+                <input type="radio" class="form-check-input" name="travel_style" value="관광" id="travel_style4">
+                <label class="form-check-label" for="travel_style4">관광</label>
+                <input type="radio" class="form-check-input" name="travel_style" value="문화" id="travel_style5">
+                <label class="form-check-label" for="travel_style5">문화</label>
+                <input type="radio" class="form-check-input" name="travel_style" value="역사" id="travel_style6">
+                <label class="form-check-label" for="travel_style6">역사</label>
                 <!-- 다른 선택지에 대한 라디오 버튼 추가 -->
             </div>
 
@@ -101,19 +102,18 @@
             <div class="form-group">
                 <label>5. 선호하는 여행 일정:</label>
                 <div></div>
-                <input type="radio" class="form-check-input" name="travel_schedule" value="빼곡한 일정">
-                <label class="form-check-label" for="travel_schedule">빼곡한 일정</label>
-                <input type="radio" class="form-check-input" name="travel_schedule" value="널널한 일정">
-                <label class="form-check-label" for="travel_schedule">널널한 일정</label>
+                <input type="radio" class="form-check-input" name="travel_schedule" value="빼곡한 일정" id="travel_schedule1">
+                <label class="form-check-label" for="travel_schedule1">빼곡한 일정</label>
+                <input type="radio" class="form-check-input" name="travel_schedule" value="널널한 일정" id="travel_schedule2">
+                <label class="form-check-label" for="travel_schedule2">널널한 일정</label>
             </div>
 
             <button type="submit" class="btn btn-primary">추천 받기</button>
         </form>
     </div>
 
-
     <!-- Bootstrap 스크립트 및 추가 스크립트를 불러옴 -->
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 
