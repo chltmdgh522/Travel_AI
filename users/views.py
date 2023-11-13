@@ -1,3 +1,5 @@
+import csv
+import os
 from audioop import reverse
 
 from django.shortcuts import render, redirect
@@ -120,9 +122,23 @@ def recommend_view(request):
     except TravelResponse.DoesNotExist:
         # 사용자에 대한 TravelResponse가 없는 경우 처리
         travel_response = None
+    csv_file_path = r'C:\Users\chltm\PycharmProjects\djangoProject1\Django-registration-and-login-system\통합 문서1.csv'
+    os.chdir(r"C:\Users\chltm\PycharmProjects\djangoProject1\Django-registration-and-login-system")
+    selected_rows = []
 
-    csv_file_path = r'C:\Users\chltm\PycharmProjects\djangoProject1\Django-registration-and-login-system\통합문서1.csv'
-    return render(request, 'travel/recommend.html',{'travel_response': travel_response})
+    # CSV 파일 읽기
+    with open(csv_file_path, newline='', encoding='utf-8-sig') as csvfile:
+        csv_reader = csv.DictReader(csvfile)
+
+        # CSV 파일의 각 행에 대해 반복
+        for row in csv_reader:
+            print(f"Comparing: {row.get('나라')} with {travel_response.country}")
+            # 특정 조건을 만족하는 경우 해당 행을 선택
+            if '나라' in row and row['나라'] == travel_response.country:
+                selected_rows.append(row)
+
+    return render(request, 'travel/recommend.html',
+                  {'travel_response': travel_response, 'selected_rows': selected_rows})
 
 @login_required
 def plan_view(request):
