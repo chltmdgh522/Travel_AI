@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Travel Recommendation Form</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        /* 추가적인 스타일링을 위한 CSS를 여기에 추가하세요 */
+        body {
+            padding-top: 50px; /* Navbar가 페이지 내용을 가리지 않도록 조절 */
+        }
+
+        /* 선택된 버튼의 스타일을 변경하는 CSS */
+        .form-check-input:checked {
+            background-color: #007bff;
+            color: #fff;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container mt-5">
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+            <a class="navbar-brand" href="/">LOVE TRIP</a>
+
+            <div class="collapse navbar-collapse" id="navbarCollapse">
+                <div class="navbar-nav ml-auto">
+                    {% if user.is_authenticated %}
+                    <a href="{% url 'users-profile' %}" class="nav-item nav-link">마이프로필</a>
+                    <a href="{% url 'logout' %}" class="nav-item nav-link">로그아웃</a>
+                    {% else %}
+                    <a href="{% url 'login' %}" class="nav-item nav-link">로그인</a>
+                    {% endif %}
+                </div>
+            </div>
+        </nav>
+
+        <h2>여행 추천</h2>
+        <form method="post" action="{% url 'travel' %}" onsubmit="return validateForm();">
+            {% csrf_token %}
+            <!-- 1번째 질문: 여행 떠나고 싶은 중남미 나라 -->
+            <div class="form-group">
+                <label for="country">1. 여행 떠나고 싶은 중남미 나라:</label>
+                <div></div>
+                <input type="radio" class="form-check-input" name="country" value="메시">
+                <label class="form-check-label" for="country">메시</label>
+                <input type="radio" class="form-check-input" name="country" value="네이마르">
+                <label class="form-check-label" for="country">네이마르</label>
+                <!-- 다른 나라들에 대한 라디오 버튼 추가 -->
+            </div>
+
+            <!-- 2번째 질문: 여행 기간 -->
+            <div class="form-group">
+                <label>2. 여행 기간:</label>
+                <div></div>
+                <input type="radio" class="form-check-input" name="duration" value="단기 여행">
+                <label class="form-check-label" for="duration">단기 여행</label>
+                <input type="radio" class="form-check-input" name="duration" value="장기 여행">
+                <label class="form-check-label" for="duration">장기 여행</label>
+            </div>
+
+            <!-- 3번째 질문: 누구랑 떠나는가 -->
+            <div class="form-group">
+                <label>3. 누구랑 떠나는가:</label>
+                <div></div>
+                <input type="radio" class="form-check-input" name="companions" value="혼자">
+                <label class="form-check-label" for="companions">혼자</label>
+                <input type="radio" class="form-check-input" name="companions" value="친구">
+                <label class="form-check-label" for="companions">친구</label>
+                <input type="radio" class="form-check-input" name="companions" value="연인">
+                <label class="form-check-label" for="companions">연인</label>
+                <input type="radio" class="form-check-input" name="companions" value="부모님">
+                <label class="form-check-label" for="companions">부모님</label>
+                <input type="radio" class="form-check-input" name="companions" value="배우자">
+                <label class="form-check-label" for="companions">배우자</label>
+                <!-- 다른 선택지에 대한 라디오 버튼 추가 -->
+            </div>
+
+            <!-- 4번째 질문: 선호하는 여행 스타일 -->
+            <div class="form-group">
+                <label>4. 선호하는 여행 스타일:</label>
+                <div></div>
+                <input type="radio" class="form-check-input" name="travel_style" value="SNS 핫플레이스">
+                <label class="form-check-label" for="travel_style">SNS 핫플레이스</label>
+                <input type="radio" class="form-check-input" name="travel_style" value="자연과 함께">
+                <label class="form-check-label" for="travel_style">자연과 함께</label>
+                <input type="radio" class="form-check-input" name="travel_style" value="먹방">
+                <label class="form-check-label" for="travel_style">먹방</label>
+                <input type="radio" class="form-check-input" name="travel_style" value="관광">
+                <label class="form-check-label" for="travel_style">관광</label>
+                <input type="radio" class="form-check-input" name="travel_style" value="문화">
+                <label class="form-check-label" for="travel_style">문화</label>
+                <input type="radio" class="form-check-input" name="travel_style" value="역사">
+                <label class="form-check-label" for="travel_style">역사</label>
+                <!-- 다른 선택지에 대한 라디오 버튼 추가 -->
+            </div>
+
+            <!-- 5번째 질문: 선호하는 여행 일정 -->
+            <div class="form-group">
+                <label>5. 선호하는 여행 일정:</label>
+                <div></div>
+                <input type="radio" class="form-check-input" name="travel_schedule" value="빼곡한 일정">
+                <label class="form-check-label" for="travel_schedule">빼곡한 일정</label>
+                <input type="radio" class="form-check-input" name="travel_schedule" value="널널한 일정">
+                <label class="form-check-label" for="travel_schedule">널널한 일정</label>
+            </div>
+
+            <button type="submit" class="btn btn-primary">추천 받기</button>
+        </form>
+    </div>
+
+
+    <!-- Bootstrap 스크립트 및 추가 스크립트를 불러옴 -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+    <script>
+        function validateForm() {
+            // Get all radio button groups
+            var radioGroups = document.querySelectorAll('input[type="radio"]:checked');
+
+            // Check if all five questions are answered
+            if (radioGroups.length !== 5) {
+                alert('Please answer all five questions before submitting.');
+                return false; // Prevent form submission
+            }
+
+            // Form is valid, continue with submission
+            return true;
+        }
+    </script>
+</body>
+
+</html>

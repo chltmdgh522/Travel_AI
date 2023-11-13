@@ -5,6 +5,7 @@ from django.contrib import messages
 from django.contrib.messages.views import SuccessMessageMixin
 from django.views import View
 from django.contrib.auth.decorators import login_required
+from .models import TravelResponse
 
 from .forms import RegisterForm, LoginForm, UpdateUserForm, UpdateProfileForm
 
@@ -79,6 +80,68 @@ class ChangePasswordView(SuccessMessageMixin, PasswordChangeView):
     success_url = reverse_lazy('users-home')
 
 
+@login_required
+def travel_view(request):
+    # 사용자에 대한 TravelResponse 인스턴스 가져오기
+    try:
+        travel_response = TravelResponse.objects.get(user=request.user)
+    except TravelResponse.DoesNotExist:
+        # 만약 객체가 없다면, 새로운 객체를 생성
+        travel_response = TravelResponse.objects.create(user=request.user)
+
+    if request.method == 'POST':
+        # 폼 데이터 가져오기
+        country = request.POST.get('country')
+        duration = request.POST.get('duration')
+        companions = request.POST.get('companions')
+        travel_style = request.POST.get('travel_style')
+        travel_schedule = request.POST.get('travel_schedule')
+
+        # TravelResponse 모델 업데이트
+        travel_response.country = country
+        travel_response.duration = duration
+        travel_response.companions = companions
+        travel_response.travel_style = travel_style
+        travel_response.travel_schedule = travel_schedule
+
+        # 업데이트된 모델 저장
+        travel_response.save()
+
+        return redirect('travel')  # 저장 후 여행 폼으로 리디렉션
+
+    return render(request, 'travel/travel.html', {'travel_response': travel_response})
+@login_required
+def plan_view(request):
+    return render(request, 'travel/plan.html')
+
+
+@login_required
+def save_response(request):
+    if request.method == 'POST':
+        # 사용자에 대한 TravelResponse 인스턴스를 가져오거나 생성
+        travel_response, created = TravelResponse.objects.get_or_create(user=request.user)
+
+        # 폼 데이터 가져오기
+        country = request.POST.get('country')
+        duration = request.POST.get('duration')
+        companions = request.POST.get('companions')
+        travel_style = request.POST.get('travel_style')
+        travel_schedule = request.POST.get('travel_schedule')
+
+        # TravelResponse 모델 업데이트
+        travel_response.country = country
+        travel_response.duration = duration
+        travel_response.companions = companions
+        travel_response.travel_style = travel_style
+        travel_response.travel_schedule = travel_schedule
+
+        # 업데이트된 모델 저장
+        travel_response.save()
+
+        return redirect('travel')  # 저장 후 여행 폼으로 리디렉션
+
+    # POST 요청이 아니면 다른 처리 또는 에러 핸들링이 필요할 수 있습니다.
+    return redirect('travel')  # 일단은 여행 폼으로 리디렉션
 @login_required
 def profile(request):
     if request.method == 'POST':
