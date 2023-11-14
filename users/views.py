@@ -111,7 +111,6 @@ def travel_view(request):
         # 업데이트된 모델 저장
         travel_response.save()
 
-
         return redirect('recommend')
 
     return render(request, 'travel/travel.html', {'travel_response': travel_response})
@@ -132,10 +131,12 @@ def recommend_view(request):
 
         # CSV 파일의 각 행에 대해 반복
         for row in csv_reader:
-            print(f"Comparing: {row.get('나라')} with {travel_response.country}")
+            # print(f"Comparing: {row.get('나라')} with {travel_response.country}")
             # 특정 조건을 만족하는 경우 해당 행을 선택
             if '나라' in row and row['나라'] == travel_response.country:
-                selected_rows.append(row)
+                if '기간' in row and row['기간'] == travel_response.duration:
+                    print("gd")
+                    selected_rows.append(row)
 
     return render(request, 'travel/recommend.html',
                   {'travel_response': travel_response, 'selected_rows': selected_rows})
@@ -172,6 +173,26 @@ def save_response(request):
 
     # POST 요청이 아니면 다른 처리 또는 에러 핸들링이 필요할 수 있습니다.
     return redirect('travel')  # 일단은 여행 폼으로 리디렉션
+
+
+def get_row_by_id(travel_id):
+    with open(r'C:\Users\chltm\PycharmProjects\djangoProject1\Django-registration-and-login-system\통합 문서1.csv', newline='', encoding='utf-8-sig') as csvfile:
+        reader = csv.DictReader(csvfile)
+        for row in reader:
+            if row['주소'] == travel_id:
+                return row
+    return None
+
+
+@login_required
+def site_view(request, travel_id):
+    # travel_id에 해당하는 행을 CSV 파일에서 가져옴
+    row_data = get_row_by_id(travel_id)
+
+    # 가져온 데이터를 템플릿으로 전달
+    return render(request, 'travel/site.html', {'travel_id': travel_id, 'row_data': row_data})
+
+
 @login_required
 def profile(request):
     if request.method == 'POST':
