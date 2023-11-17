@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+    <title>Travel Recommendation Form</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f8f9fa;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            width: 400px;
+        }
+
+        h2 {
+            color: #007bff;
+            text-align: center;
+        }
+
+        label {
+            font-weight: bold;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .custom-control-label {
+            margin-left: 10px;
+        }
+
+        button {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 100%;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        button:disabled {
+            background-color: #d6d6d6;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+
+<body>
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+        <a class="navbar-brand" href="/">LOVE TRIP</a>
+        <div class="collapse navbar-collapse" id="navbarCollapse">
+            <div class="navbar-nav ml-auto">
+                {% if user.is_authenticated %}
+                <a href="{% url 'users-profile' %}" class="nav-item nav-link">마이프로필</a>
+                <a href="{% url 'logout' %}" class="nav-item nav-link">로그아웃</a>
+                {% else %}
+                <a href="{% url 'login' %}" class="nav-item nav-link">로그인</a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h2>여행 추천</h2>
+        <form method="post" action="{% url 'save_plan3' %}" onsubmit="return validateForm();">
+            {% csrf_token %}
+
+            <!-- 3번째 질문: 누구랑 떠나는가 -->
+            <div class="form-group">
+                <label>3. 누구랑 떠나는가:</label>
+                <div class="custom-control custom-radio">
+                    <input type="radio" class="custom-control-input" name="companions" value="혼자" id="companions1">
+                    <label class="custom-control-label" for="companions1">혼자</label>
+                </div>
+                <div class="custom-control custom-radio">
+                    <input type="radio" class="custom-control-input" name="companions" value="친구" id="companions2">
+                    <label class="custom-control-label" for="companions2">친구</label>
+                </div>
+                <div class="custom-control custom-radio">
+                    <input type="radio" class="custom-control-input" name="companions" value="연인" id="companions3">
+                    <label class="custom-control-label" for="companions3">연인</label>
+                </div>
+                <div class="custom-control custom-radio">
+                    <input type="radio" class="custom-control-input" name="companions" value="부모님" id="companions4">
+                    <label class="custom-control-label" for="companions4">부모님</label>
+                </div>
+                <div class="custom-control custom-radio">
+                    <input type="radio" class="custom-control-input" name="companions" value="배우자" id="companions5">
+                    <label class="custom-control-label" for="companions5">배우자</label>
+                </div>
+                <!-- 다른 선택지에 대한 라디오 버튼 추가 -->
+            </div>
+
+            <button type="submit" class="btn btn-primary">이동</button>
+        </form>
+    </div>
+
+    <script>
+        function validateForm() {
+            var radioGroups = document.querySelectorAll('input[type="radio"]:checked');
+
+            if (radioGroups.length !== 1) {
+                alert('가고 싶은 사람을 선택해주세요!');
+                return false;
+            }
+
+            return true;
+        }
+    </script>
+
+</body>
+
+</html>

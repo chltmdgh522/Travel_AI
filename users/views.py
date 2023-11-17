@@ -90,30 +90,11 @@ def travel_view(request):
     try:
         travel_response = TravelResponse.objects.get(user=request.user)
     except TravelResponse.DoesNotExist:
-        # 만약 객체가 없다면, 새로운 객체를 생성
-        travel_response = TravelResponse.objects.create(user=request.user)
+        return render(request, 'travel/travel.html', {'travel_response': None})
 
-    if request.method == 'POST':
-        # 폼 데이터 가져오기
-        country = request.POST.get('country')
-        duration = request.POST.get('duration')
-        companions = request.POST.get('companions')
-        travel_style = request.POST.get('travel_style')
-        travel_schedule = request.POST.get('travel_schedule')
+    # travel_response가 존재할 경우에는 HttpResponse 객체 반환
+    return (render(request, 'travel/travel.html', {'travel_response': travel_response}))
 
-        # TravelResponse 모델 업데이트
-        travel_response.country = country
-        travel_response.duration = duration
-        travel_response.companions = companions
-        travel_response.travel_style = travel_style
-        travel_response.travel_schedule = travel_schedule
-
-        # 업데이트된 모델 저장
-        travel_response.save()
-
-        return redirect('recommend')
-
-    return render(request, 'travel/travel.html', {'travel_response': travel_response})
 @login_required
 def recommend_view(request):
     try:
@@ -140,40 +121,6 @@ def recommend_view(request):
 
     return render(request, 'travel/recommend.html',
                   {'travel_response': travel_response, 'selected_rows': selected_rows})
-
-@login_required
-def plan_view(request):
-    return render(request, 'travel/plan.html')
-
-
-@login_required
-def save_response(request):
-    if request.method == 'POST':
-        # 사용자에 대한 TravelResponse 인스턴스를 가져오거나 생성
-        travel_response, created = TravelResponse.objects.get_or_create(user=request.user)
-
-        # 폼 데이터 가져오기
-        country = request.POST.get('country')
-        duration = request.POST.get('duration')
-        companions = request.POST.get('companions')
-        travel_style = request.POST.get('travel_style')
-        travel_schedule = request.POST.get('travel_schedule')
-
-        # TravelResponse 모델 업데이트
-        travel_response.country = country
-        travel_response.duration = duration
-        travel_response.companions = companions
-        travel_response.travel_style = travel_style
-        travel_response.travel_schedule = travel_schedule
-
-        # 업데이트된 모델 저장
-        travel_response.save()
-
-        return redirect('/')  # 저장 후 여행 폼으로 리디렉션
-
-    # POST 요청이 아니면 다른 처리 또는 에러 핸들링이 필요할 수 있습니다.
-    return redirect('travel')  # 일단은 여행 폼으로 리디렉션
-
 
 def get_row_by_id(travel_id):
     with open(r'C:\Users\chltm\PycharmProjects\djangoProject1\Django-registration-and-login-system\통합 문서1.csv', newline='', encoding='utf-8-sig') as csvfile:
@@ -209,3 +156,117 @@ def profile(request):
         profile_form = UpdateProfileForm(instance=request.user.profile)
 
     return render(request, 'users/profile.html', {'user_form': user_form, 'profile_form': profile_form})
+
+
+@login_required
+def plan_view1(request):
+    return render(request, 'travel/plan1.html')
+@login_required
+def save_plan1(request):
+
+        # 사용자에 대한 TravelResponse 인스턴스를 가져오거나 생성
+    travel_response, created = TravelResponse.objects.get_or_create(user=request.user)
+
+        # 폼 데이터 가져오기
+    country = request.POST.get('country')
+
+        # TravelResponse 모델 업데이트
+    travel_response.country = country
+
+        # 업데이트된 모델 저장
+    travel_response.save()
+
+    return redirect('travel/plan2')  # 저장 후 여행 폼으로 리디렉션\
+
+
+@login_required
+def plan_view2(request):
+    return render(request, 'travel/plan2.html')
+
+
+@login_required
+def save_plan2(request):
+    if request.method == 'POST':
+        # 사용자에 대한 TravelResponse 인스턴스를 가져오거나 생성
+        travel_response, created = TravelResponse.objects.get_or_create(user=request.user)
+
+        # 폼 데이터 가져오기
+        duration = request.POST.get('duration')
+
+        # TravelResponse 모델 업데이트
+        travel_response.duration = duration
+
+        # 업데이트된 모델 저장
+        travel_response.save()
+
+        return redirect('travel/plan3')  # 저장 후 여행 폼으로 리디렉션
+
+@login_required
+def plan_view3(request):
+    return render(request, 'travel/plan3.html')
+
+
+@login_required
+def save_plan3(request):
+    if request.method == 'POST':
+        # 사용자에 대한 TravelResponse 인스턴스를 가져오거나 생성
+        travel_response, created = TravelResponse.objects.get_or_create(user=request.user)
+
+        # 폼 데이터 가져오기
+        companions = request.POST.get('companions')
+
+        # TravelResponse 모델 업데이트
+        travel_response.companions = companions
+
+        # 업데이트된 모델 저장
+        travel_response.save()
+
+        return redirect('travel/plan4')  # 저장 후 여행 폼으로 리디렉션
+
+@login_required
+def plan_view4(request):
+    return render(request, 'travel/plan4.html')
+
+
+@login_required
+def save_plan4(request):
+    if request.method == 'POST':
+        # 사용자에 대한 TravelResponse 인스턴스를 가져오거나 생성
+        travel_response, created = TravelResponse.objects.get_or_create(user=request.user)
+
+        # 폼 데이터 가져오기
+        travel_style = request.POST.get('travel_style')
+
+
+        # TravelResponse 모델 업데이트
+        travel_response.travel_style = travel_style
+
+        # 업데이트된 모델 저장
+        travel_response.save()
+
+        return redirect('travel/plan5')  # 저장 후 여행 폼으로 리디렉션
+
+
+@login_required
+def plan_view5(request):
+    return render(request, 'travel/plan5.html')
+
+
+@login_required
+def save_plan5(request):
+    if request.method == 'POST':
+        # 사용자에 대한 TravelResponse 인스턴스를 가져오거나 생성
+        travel_response, created = TravelResponse.objects.get_or_create(user=request.user)
+
+        # 폼 데이터 가져오기
+        travel_schedule = request.POST.get('travel_schedule')
+
+        # TravelResponse 모델 업데이트
+        travel_response.travel_schedule = travel_schedule
+
+        # 업데이트된 모델 저장
+        travel_response.save()
+
+        return redirect('recommend')  # 저장 후 여행 폼으로 리디렉션
+
+
