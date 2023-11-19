@@ -33,7 +33,7 @@
     <div class="card-deck">
         {% if selected_rows %}
             {% for row in selected_rows %}
-                <a href="recommend/{{ row.주소 }}">
+                <a href="recommend/{{ row.사이트주소 }}">
                 <!-- 여행지와 여행 일정 카드 -->
                     <div class="card">
                         <div class="card-body">
@@ -47,7 +47,7 @@
                 </a>
                 {% endfor %}
             {% else %}
-                <p>일치하는 행이 없습니다.</p>
+                <p>일치하는 정보가 없습니다... 죄송합니다. 업데이트 할게요!</p>
             {% endif %}
 
 

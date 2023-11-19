@@ -12,6 +12,7 @@ from django.contrib.auth.decorators import login_required
 from .models import TravelResponse
 
 from .forms import RegisterForm, LoginForm, UpdateUserForm, UpdateProfileForm
+from datetime import datetime
 
 
 def home(request):
@@ -102,7 +103,7 @@ def recommend_view(request):
     except TravelResponse.DoesNotExist:
         # 사용자에 대한 TravelResponse가 없는 경우 처리
         travel_response = None
-    csv_file_path = r'C:\Users\chltm\PycharmProjects\djangoProject1\Django-registration-and-login-system\통합 문서1.csv'
+    csv_file_path = r'C:\Users\chltm\PycharmProjects\djangoProject1\Django-registration-and-login-system\키워드.csv'
     os.chdir(r"C:\Users\chltm\PycharmProjects\djangoProject1\Django-registration-and-login-system")
     selected_rows = []
 
@@ -112,21 +113,22 @@ def recommend_view(request):
 
         # CSV 파일의 각 행에 대해 반복
         for row in csv_reader:
-            # print(f"Comparing: {row.get('나라')} with {travel_response.country}")
+            #print(f"Comparing: {row.get('나라')} with {travel_response.country}")
             # 특정 조건을 만족하는 경우 해당 행을 선택
             if '나라' in row and row['나라'] == travel_response.country:
                 if '기간' in row and row['기간'] == travel_response.duration:
-                    print("gd")
-                    selected_rows.append(row)
+                    if '키워드' in row and row['키워드'] == travel_response.travel_style:
+                        selected_rows.append(row)
 
     return render(request, 'travel/recommend.html',
                   {'travel_response': travel_response, 'selected_rows': selected_rows})
 
+
 def get_row_by_id(travel_id):
-    with open(r'C:\Users\chltm\PycharmProjects\djangoProject1\Django-registration-and-login-system\통합 문서1.csv', newline='', encoding='utf-8-sig') as csvfile:
+    with open(r'C:\Users\chltm\PycharmProjects\djangoProject1\Django-registration-and-login-system\키워드.csv', newline='', encoding='utf-8-sig') as csvfile:
         reader = csv.DictReader(csvfile)
         for row in reader:
-            if row['주소'] == travel_id:
+            if row['사이트주소'] == travel_id:
                 return row
     return None
 
@@ -135,9 +137,15 @@ def get_row_by_id(travel_id):
 def site_view(request, travel_id):
     # travel_id에 해당하는 행을 CSV 파일에서 가져옴
     row_data = get_row_by_id(travel_id)
+    print(row_data)
 
+    if row_data and '기간' in row_data:
+        travel_duration = int(row_data['기간'].split('박')[0])  # '3박4일'에서 '3'을 추출하고 숫자로 변환
+        travel_range = range(1, travel_duration + 1)
+    else:
+        travel_range = []
     # 가져온 데이터를 템플릿으로 전달
-    return render(request, 'travel/site.html', {'travel_id': travel_id, 'row_data': row_data})
+    return render(request, 'travel/site.html', {'travel_id': travel_id, 'row_data': row_data, 'travel_duration': travel_duration})
 
 
 @login_required
@@ -191,16 +199,25 @@ def save_plan2(request):
         travel_response, created = TravelResponse.objects.get_or_create(user=request.user)
 
         # 폼 데이터 가져오기
-        duration = request.POST.get('duration')
+        departure_date_str = request.POST.get('departure_date')
+        arrival_date_str = request.POST.get('arrival_date')
+
+        # 문자열을 datetime 객체로 변환 (형식 "%m/%d/%Y")
+        departure_date = datetime.strptime(departure_date_str, "%m/%d/%Y")
+        arrival_date = datetime.strptime(arrival_date_str, "%m/%d/%Y")
 
         # TravelResponse 모델 업데이트
-        travel_response.duration = duration
+        travel_response.arrival_date = arrival_date
+        travel_response.departure_date = departure_date
+
+        # 여행 기간 계산
+        duration = arrival_date - departure_date
 
         # 업데이트된 모델 저장
+        travel_response.duration = f"{duration.days}박{duration.days + 1}일"
         travel_response.save()
 
         return redirect('travel/plan3')  # 저장 후 여행 폼으로 리디렉션
-
 @login_required
 def plan_view3(request):
     return render(request, 'travel/plan3.html')

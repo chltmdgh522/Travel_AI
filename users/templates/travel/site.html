@@ -4,12 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>여행 일정</title>
+
+
     <!-- 부트스트랩 CSS 링크 추가 -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
     <style>
         /* 여기에 사용자 정의 스타일 추가 가능 */
         body {
             background-color: #f8f9fa;
+            padding-top: 50px; /* Navbar가 페이지 내용을 가리지 않도록 조절 */
+
         }
         .container {
             margin-top: 50px;
@@ -17,29 +21,330 @@
     </style>
 </head>
 <body>
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+    <a class="navbar-brand" href="/">LOVE TRIP</a>
+    <div class="collapse navbar-collapse" id="navbarCollapse">
+        <div class="navbar-nav ml-auto">
+            {% if user.is_authenticated %}
+            <a href="{% url 'users-profile' %}" class="nav-item nav-link">마이프로필</a>
+            <a href="{% url 'logout' %}" class="nav-item nav-link">로그아웃</a>
+            {% else %}
+            <a href="{% url 'login' %}" class="nav-item nav-link">로그인</a>
+            {% endif %}
+        </div>
+    </div>
+</nav>
+
+
+ <div id="map" style="height: 400px; width: 100%;"></div>
+    <script>
+    var map; // 전역으로 map 변수 정의
+    var markers = [];
+    function initMap(callback) {
+        map = new google.maps.Map(document.getElementById('map'), {
+            center: {lat: {{ row_data.위도1 }}, lng: {{ row_data.경도1 }}},
+            zoom: 15,
+        });
+
+        // 여행 일정의 위치 데이터 배열
+
+        var locations = [];
+        {% if travel_duration >= 1 %}
+            locations.push({lat: {{ row_data.위도1 }}, lng: {{ row_data.경도1 }}});
+        {% endif %}
+
+        {% if travel_duration >= 2 %}
+            locations.push({lat: {{ row_data.위도2 }}, lng: {{ row_data.경도2 }}});
+        {% endif %}
+
+        {% if travel_duration >= 3 %}
+            locations.push({lat: {{ row_data.위도3 }}, lng: {{ row_data.경도3 }}});
+        {% endif %}
+
+        {% if travel_duration >= 4 %}
+            locations.push({lat: {{ row_data.위도4 }}, lng: {{ row_data.경도4 }}});
+        {% endif %}
+
+        {% if travel_duration >= 5 %}
+            locations.push({lat: {{ row_data.위도5 }}, lng: {{ row_data.경도5 }}});
+        {% endif %}
+
+        {% if travel_duration >= 6 %}
+            locations.push({lat: {{ row_data.위도6 }}, lng: {{ row_data.경도6 }}});
+        {% endif %}
+
+        {% if travel_duration >= 7 %}
+            locations.push({lat: {{ row_data.위도7 }}, lng: {{ row_data.경도7 }}});
+        {% endif %}
+
+        {% if travel_duration >= 8 %}
+            locations.push({lat: {{ row_data.위도8 }}, lng: {{ row_data.경도8 }}});
+        {% endif %}
+
+        {% if travel_duration >= 9 %}
+            locations.push({lat: {{ row_data.위도9 }}, lng: {{ row_data.경도9 }}});
+        {% endif %}
+        {% if travel_duration >= 10 %}
+            locations.push({lat: {{ row_data.위도10 }}, lng: {{ row_data.경도10 }}});
+        {% endif %}
+        {% if travel_duration >= 11 %}
+            locations.push({lat: {{ row_data.위도11 }}, lng: {{ row_data.경도11 }}});
+        {% endif %}
+        {% if travel_duration >= 12 %}
+            locations.push({lat: {{ row_data.위도12 }}, lng: {{ row_data.경도12 }}});
+        {% endif %}
+        {% if travel_duration >= 13 %}
+            locations.push({lat: {{ row_data.위도13 }}, lng: {{ row_data.경도13 }}});
+        {% endif %}
+        // 각 위치에 마커 추가
+        for (var i = 0; i < locations.length; i++) {
+            console.log(locations[i]);
+            var marker = new google.maps.Marker({
+                position: locations[i],
+                map: map,
+                title: 'u',
+            });
+
+            // 클릭 이벤트 리스너 추가
+    marker.addListener('click', function() {
+        // 클릭한 마커의 위치 정보를 콘솔에 출력
+         var markerPosition = this.getPosition();
+
+        // 정보 창 생성
+        var infoWindow = new google.maps.InfoWindow({
+            content: '여행지 위치는 ' + markerPosition + " 여기에요! "
+
+        });
+
+        infoWindow.open(map, this);
+    });
+    markers.push(marker);
+        }
+
+    }
+
+    function highlightMarker(markerIndex, latitude, longitude) {
+        console.log("gkdl")
+    // 이동할 위치 생성
+    var newPosition = new google.maps.LatLng(latitude, longitude);
+
+    // 해당 마커로 지도 이동
+    map.panTo(newPosition);
+
+    // 선택한 마커 강조 효과 등을 추가할 수 있습니다.
+    // 예: markers[markerIndex].setAnimation(google.maps.Animation.BOUNCE);
+}
+    </script>
+ <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBuTKuky_Mpk7I2XA4oL0RI1lrV0Aq7FKs&callback=initMap"
+            async defer></script>
 
 <div class="container">
-    <h2 class="mb-4">여행 일정</h2>
-    <div class="card-deck">
-        {% if row_data %}
-            <div class="card">
+    <h2 class="mb-4">🚀{{row_data.기간 }}의 여행일정</h2>
+
+        {% if travel_duration >= 1 %}
+            <div class="card" id="location-card-{{ 1 }}"  onclick="highlightMarker(1,{{ row_data.위도1 }}, {{ row_data.경도1 }})">
                 <div class="card-body">
-                    <h5 class="card-title">{{ row_data.나라 }}</h5>
+                    <h5 class="card-title">1박</h5>
                     <p class="card-text">
-                        <strong>여행 비용:</strong> ${{ row_data.비용 }}
+                        <strong>여행지:</strong> {{ row_data.여행지1}}
                         <br>
-                        <strong>여행 일정:</strong> {{ row_data.여행지 }}
+                        <strong>위도:</strong> {{ row_data.위도1 }}
+                        <strong>경도:</strong> {{ row_data.경도1}}
+                        <br>
+                        <strong>여행 키워드:</strong> {{ row_data.키워드 }}
                     </p>
                 </div>
             </div>
-        {% else %}
-            <div class="card">
+    {% endif %}
+        {% if travel_duration >= 2 %}
+            <div class="card" id="location-card-{{ 2 }}" onclick="highlightMarker(2,{{ row_data.위도2 }}, {{ row_data.경도2 }})">
                 <div class="card-body">
-                    <h5 class="card-title">일치하는 여행 일정이 없습니다.</h5>
+                    <h5 class="card-title">2박</h5>
+                    <p class="card-text">
+                        <strong>여행지:</strong> {{ row_data.여행지2}}
+                        <br>
+                        <strong>위도:</strong> {{ row_data.위도2 }}
+                        <strong>경도:</strong> {{ row_data.경도2}}
+                        <br>
+                        <strong>여행 키워드:</strong> {{ row_data.키워드 }}
+                    </p>
+                </div>
+            </div>
+{% endif %}
+        {% if travel_duration >= 3 %}
+            <div class="card" id="location-card-{{ 3 }}" onclick="highlightMarker(3,{{ row_data.위도3 }}, {{ row_data.경도3 }})">
+                <div class="card-body">
+                    <h5 class="card-title">3박</h5>
+                    <p class="card-text">
+                        <strong>여행지:</strong> {{ row_data.여행지3}}
+                        <br>
+                        <strong>위도:</strong> {{ row_data.위도3 }}
+                        <strong>경도:</strong> {{ row_data.경도3}}
+                        <br>
+                        <strong>여행 키워드:</strong> {{ row_data.키워드 }}
+                    </p>
+                </div>
+            </div>
+{% endif %}
+        {% if travel_duration >= 4 %}
+            <div class="card" id="location-card-{{ 4 }}" onclick="highlightMarker(4,{{ row_data.위도4 }}, {{ row_data.경도4 }})">
+                <div class="card-body">
+                    <h5 class="card-title">4박</h5>
+                    <p class="card-text">
+                        <strong>여행지:</strong> {{ row_data.여행지4}}
+                        <br>
+                        <strong>위도:</strong> {{ row_data.위도4 }}
+                        <strong>경도:</strong> {{ row_data.경도4}}
+                        <br>
+                        <strong>여행 키워드:</strong> {{ row_data.키워드 }}
+                    </p>
+                </div>
+            </div>
+{% endif %}
+        {% if travel_duration >= 5 %}
+            <div class="card" id="location-card-{{ 5 }}" onclick="highlightMarker(5,{{ row_data.위도5 }}, {{ row_data.경도5 }})">
+                <div class="card-body">
+                    <h5 class="card-title">5박</h5>
+                    <p class="card-text">
+                        <strong>여행지:</strong> {{ row_data.여행지5}}
+                        <br>
+                        <strong>위도:</strong> {{ row_data.위도5 }}
+                        <strong>경도:</strong> {{ row_data.경도5}}
+                        <br>
+                        <strong>여행 키워드:</strong> {{ row_data.키워드 }}
+                    </p>
+                </div>
+            </div>
+{% endif %}
+        {% if travel_duration >= 6 %}
+            <div class="card" id="location-card-{{ 6 }}" onclick="highlightMarker(6,{{ row_data.위도6 }}, {{ row_data.경도6 }})">
+                <div class="card-body">
+                    <h5 class="card-title">6박</h5>
+                    <p class="card-text">
+                        <strong>여행지:</strong> {{ row_data.여행지6}}
+                        <br>
+                        <strong>위도:</strong> {{ row_data.위도6 }}
+                        <strong>경도:</strong> {{ row_data.경도6}}
+                        <br>
+                        <strong>여행 키워드:</strong> {{ row_data.키워드 }}
+                    </p>
+                </div>
+            </div>
+{% endif %}
+        {% if travel_duration >= 7 %}
+            <div class="card" id="location-card-{{ 7 }}" onclick="highlightMarker(7,{{ row_data.위도7 }}, {{ row_data.경도7 }})">
+                <div class="card-body">
+                    <h5 class="card-title">7박</h5>
+                    <p class="card-text">
+                        <strong>여행지:</strong> {{ row_data.여행지7}}
+                        <br>
+                        <strong>위도:</strong> {{ row_data.위도7 }}
+                        <strong>경도:</strong> {{ row_data.경도7}}
+                        <br>
+                        <strong>여행 키워드:</strong> {{ row_data.키워드7 }}
+                    </p>
+                </div>
+            </div>
+{% endif %}
+        {% if travel_duration >= 8 %}
+            <div class="card" id="location-card-{{ 8 }}" onclick="highlightMarker(8,{{ row_data.위도8 }}, {{ row_data.경도8 }})">
+                <div class="card-body">
+                    <h5 class="card-title">8박</h5>
+                    <p class="card-text">
+                        <strong>여행지:</strong> {{ row_data.여행지8}}
+                        <br>
+                        <strong>위도:</strong> {{ row_data.위도8 }}
+                        <strong>경도:</strong> {{ row_data.경도8}}
+                        <br>
+                        <strong>여행 키워드:</strong> {{ row_data.키워드 }}
+                    </p>
+                </div>
+            </div>
+{% endif %}
+        {% if travel_duration >= 9 %}
+            <div class="card" id="location-card-{{ 9 }}" onclick="highlightMarker(9,{{ row_data.위도9 }}, {{ row_data.경도9 }})">
+                <div class="card-body">
+                    <h5 class="card-title">9박</h5>
+                    <p class="card-text">
+                        <strong>여행지:</strong> {{ row_data.여행지9}}
+                        <br>
+                        <strong>위도:</strong> {{ row_data.위도9 }}
+                        <strong>경도:</strong> {{ row_data.경도9}}
+                        <br>
+                        <strong>여행 키워드:</strong> {{ row_data.키워드 }}
+                    </p>
+                </div>
+            </div>
+                {% endif %}
+
+        {% if travel_duration >= 10 %}
+            <div class="card" id="location-card-{{ 10 }}" onclick="highlightMarker(10,{{ row_data.위도10 }}, {{ row_data.경도10 }})">
+                <div class="card-body">
+                    <h5 class="card-title">10박</h5>
+                    <p class="card-text">
+                        <strong>여행지:</strong> {{ row_data.여행지10}}
+                        <br>
+                        <strong>위도:</strong> {{ row_data.위도10 }}
+                        <strong>경도:</strong> {{ row_data.경도10}}
+                        <br>
+                        <strong>여행 키워드:</strong> {{ row_data.키워드 }}
+                    </p>
                 </div>
             </div>
         {% endif %}
-    </div>
+
+        {% if travel_duration >= 11 %}
+            <div class="card" id="location-card-{{ 11 }}" onclick="highlightMarker(11,{{ row_data.위도11 }}, {{ row_data.경도11 }})">
+                <div class="card-body">
+                    <h5 class="card-title">11일째</h5>
+                    <p class="card-text">
+                        <strong>여행지:</strong> {{ row_data.여행지11}}
+                        <br>
+                        <strong>위도:</strong> {{ row_data.위도11 }}
+                        <strong>경도:</strong> {{ row_data.경도11}}
+                        <br>
+                        <strong>여행 키워드:</strong> {{ row_data.키워드 }}
+                    </p>
+                </div>
+            </div>
+        {% endif %}
+
+        {% if travel_duration >= 12 %}
+            <div class="card" id="location-card-{{ 12 }}" onclick="highlightMarker(12,{{ row_data.위도12 }}, {{ row_data.경도12 }})">
+                <div class="card-body">
+                    <h5 class="card-title">12일째</h5>
+                    <p class="card-text">
+                        <strong>여행지:</strong> {{ row_data.여행지12}}
+                        <br>
+                        <strong>위도:</strong> {{ row_data.위도12 }}
+                        <strong>경도:</strong> {{ row_data.경도12}}
+                        <br>
+                        <strong>여행 키워드:</strong> {{ row_data.키워드 }}
+                    </p>
+                </div>
+            </div>
+        {% endif %}
+
+        {% if travel_duration >= 13 %}
+            <div class="card" id="location-card-{{ 13 }}" onclick="highlightMarker(13,{{ row_data.위도13 }}, {{ row_data.경도13 }})">
+                <div class="card-body">
+                    <h5 class="card-title">13일째</h5>
+                    <p class="card-text">
+                        <strong>여행지:</strong> {{ row_data.여행지13}}
+                        <br>
+                        <strong>위도:</strong> {{ row_data.위도13 }}
+                        <strong>경도:</strong> {{ row_data.경도13}}
+                        <br>
+                        <strong>여행 키워드:</strong> {{ row_data.키워드 }}
+                    </p>
+                </div>
+            </div>
+        {% endif %}
+
+
+
+
 </div>
 
 <!-- 부트스트랩 JS 및 Popper.js, jQuery 스크립트 추가 -->

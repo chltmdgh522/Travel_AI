@@ -30,9 +30,11 @@ class TravelResponse(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     country = models.CharField(max_length=255)
     duration = models.CharField(max_length=255)
+    departure_date = models.DateField(null=True)
+    arrival_date = models.DateField(null=True)
     companions = models.CharField(max_length=255)
     travel_style = models.CharField(max_length=255)
     travel_schedule = models.CharField(max_length=255)
 
     def __str__(self):
-        return f'{self.user.username} - {self.country} - {self.duration} - {self.companions} - {self.travel_style} - {self.travel_schedule}'
+        return f'{self.user.username} - {self.country} - {self.duration} -{self.departure_date} - {self.arrival_date} - {self.companions} - {self.travel_style} - {self.travel_schedule}'

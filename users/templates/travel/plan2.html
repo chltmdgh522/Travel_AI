@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/css/bootstrap-datepicker.min.css">
     <title>Travel Recommendation Form</title>
     <style>
         body {
@@ -85,31 +86,87 @@
         <form method="post" action="{% url 'save_plan2' %}" onsubmit="return validateForm();">
             {% csrf_token %}
 
-            <!-- 2번째 질문: 여행 기간 -->
+            <!-- 출발일자 선택 -->
             <div class="form-group">
-                <label>2. 여행 기간:</label>
-                <div class="custom-control custom-radio">
-                    <input type="radio" class="custom-control-input" name="duration" value="단기 여행" id="duration1">
-                    <label class="custom-control-label" for="duration1">단기 여행</label>
-                </div>
-                <div class="custom-control custom-radio">
-                    <input type="radio" class="custom-control-input" name="duration" value="장기 여행" id="duration2">
-                    <label class="custom-control-label" for="duration2">장기 여행</label>
+                <label>출발일자:</label>
+                <div class="input-group date" data-provide="datepicker">
+                    <input type="text" class="form-control datepicker" name="departure_date" placeholder="날짜를 선택하세요">
+                    <div class="input-group-addon">
+                        <span class="glyphicon glyphicon-th"></span>
+                    </div>
                 </div>
             </div>
 
-
+            <!-- 도착일자 선택 -->
+            <div class="form-group">
+                <label>도착일자:</label>
+                <div class="input-group date" data-provide="datepicker">
+                    <input type="text" class="form-control datepicker" name="arrival_date" placeholder="날짜를 선택하세요">
+                    <div class="input-group-addon">
+                        <span class="glyphicon glyphicon-th"></span>
+                    </div>
+                </div>
+            </div>
 
             <button type="submit" class="btn btn-primary">이동</button>
         </form>
     </div>
 
-    <script>
-        function validateForm() {
-            var radioGroups = document.querySelectorAll('input[type="radio"]:checked');
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.min.js"></script>
 
-            if (radioGroups.length !== 1) {
-                alert('원하시는 여행 기간을 선택해주세요!');
+    <script>
+        $(document).ready(function () {
+            $('.datepicker').datepicker({
+                format: 'mm/dd/yyyy',  // 달력에서의 날짜 형식 (예: 11/14/2023)
+                todayHighlight: true,
+                autoclose: true,
+            });
+
+            // 날짜 선택이 완료되면 변경된 날짜 형식으로 설정
+            $('.datepicker').on('changeDate', function (e) {
+                // 선택한 날짜를 'YYYY-MM-DD' 형식으로 가져오기
+                var formattedDate = e.format('yyyy-mm-dd');
+                // 입력 필드에 설정
+                $(this).val(formattedDate);
+            });
+        });
+
+        function validateForm() {
+            var today = new Date().toISOString().split('T')[0]; // 현재 날짜
+            var departureDate = document.getElementsByName('departure_date')[0].value;
+            var arrivalDate = document.getElementsByName('arrival_date')[0].value;
+
+            if (!departureDate || !arrivalDate) {
+                alert('출발일자와 도착일자를 선택해주세요!');
+                return false;
+            }
+
+            // 출발일자와 도착일자의 값을 'YYYY-MM-DD' 형식으로 변경
+            var formattedDepartureDate = new Date(departureDate).toISOString().split('T')[0];
+            var formattedArrivalDate = new Date(arrivalDate).toISOString().split('T')[0];
+
+            if (formattedDepartureDate > formattedArrivalDate) {
+                alert('도착일자는 출발일자 이후여야 합니다!');
+                return false;
+            }
+
+            // 현재 날짜 이후인지 확인
+            if (formattedDepartureDate < today || formattedArrivalDate < today) {
+                alert('현재 날짜 이후의 날짜를 선택해주세요!');
+                return false;
+            }
+
+            // 최대 9박10일 체크
+            var maxDuration = 9; // 최대 여행 기간 설정
+            var startDate = new Date(departureDate);
+            var endDate = new Date(arrivalDate);
+            var duration = (endDate - startDate) / (1000 * 60 * 60 * 24); // 일 단위로 계산
+
+            if (duration > maxDuration) {
+                alert('최대 9박10일까지 선택 가능합니다!');
                 return false;
             }
 
