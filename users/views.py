@@ -10,6 +10,8 @@ from django.contrib.messages.views import SuccessMessageMixin
 from django.views import View
 from django.contrib.auth.decorators import login_required
 from .models import TravelResponse
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
 
 from .forms import RegisterForm, LoginForm, UpdateUserForm, UpdateProfileForm
 from datetime import datetime
@@ -96,13 +98,41 @@ def travel_view(request):
     # travel_response가 존재할 경우에는 HttpResponse 객체 반환
     return (render(request, 'travel/travel.html', {'travel_response': travel_response}))
 
+# @login_required
+# def recommend_view(request):
+#     try:
+#         travel_response = TravelResponse.objects.get(user=request.user)  # 관련 이름이 'travelresponse'인 경우
+#     except TravelResponse.DoesNotExist:
+#         # 사용자에 대한 TravelResponse가 없는 경우 처리
+#         travel_response = None
+#     csv_file_path = r'C:\Users\chltm\PycharmProjects\djangoProject1\Django-registration-and-login-system\키워드.csv'
+#     os.chdir(r"C:\Users\chltm\PycharmProjects\djangoProject1\Django-registration-and-login-system")
+#     selected_rows = []
+#
+#     # CSV 파일 읽기
+#     with open(csv_file_path, newline='', encoding='utf-8-sig') as csvfile:
+#         csv_reader = csv.DictReader(csvfile)
+#
+#         # CSV 파일의 각 행에 대해 반복
+#         for row in csv_reader:
+#             #print(f"Comparing: {row.get('나라')} with {travel_response.country}")
+#             # 특정 조건을 만족하는 경우 해당 행을 선택
+#             if '나라' in row and row['나라'] == travel_response.country:
+#                 if '기간' in row and row['기간'] == travel_response.duration:
+#                     if '키워드' in row and row['키워드'] == travel_response.travel_style:
+#                         selected_rows.append(row)
+#
+#     return render(request, 'travel/recommend.html',
+#                   {'travel_response': travel_response, 'selected_rows': selected_rows})
+
 @login_required
 def recommend_view(request):
     try:
-        travel_response = TravelResponse.objects.get(user=request.user)  # 관련 이름이 'travelresponse'인 경우
+        travel_response = TravelResponse.objects.get(user=request.user)
     except TravelResponse.DoesNotExist:
-        # 사용자에 대한 TravelResponse가 없는 경우 처리
         travel_response = None
+
+    # 새로운 기능: 추천 시스템
     csv_file_path = r'C:\Users\chltm\PycharmProjects\djangoProject1\Django-registration-and-login-system\키워드.csv'
     os.chdir(r"C:\Users\chltm\PycharmProjects\djangoProject1\Django-registration-and-login-system")
     selected_rows = []
@@ -111,18 +141,34 @@ def recommend_view(request):
     with open(csv_file_path, newline='', encoding='utf-8-sig') as csvfile:
         csv_reader = csv.DictReader(csvfile)
 
-        # CSV 파일의 각 행에 대해 반복
-        for row in csv_reader:
-            #print(f"Comparing: {row.get('나라')} with {travel_response.country}")
-            # 특정 조건을 만족하는 경우 해당 행을 선택
-            if '나라' in row and row['나라'] == travel_response.country:
-                if '기간' in row and row['기간'] == travel_response.duration:
-                    if '키워드' in row and row['키워드'] == travel_response.travel_style:
-                        selected_rows.append(row)
+        # 선택받은 정보 가져오기
+        selected_info = f"{travel_response.country} {travel_response.duration} {travel_response.travel_style}"
+
+        # TF-IDF 벡터화
+        vectorizer = TfidfVectorizer()
+        vectorized_data = vectorizer.fit_transform([selected_info] + [f"{row['나라']} {row['기간']} {row['키워드']}" for row in csv_reader])
+
+        # 코사인 유사도 계산
+        cosine_similarities = cosine_similarity(vectorized_data[0], vectorized_data[1:]).flatten()
+        print(cosine_similarities)
+
+        # 가장 유사한 여행 정보 선택
+        most_similar_index = cosine_similarities.argmax()
+
+        print(most_similar_index)
+    # CSV 파일을 다시 열어서 가장 유사한 여행 정보를 가져옴
+    with open(csv_file_path, newline='', encoding='utf-8-sig') as csvfile:
+        csv_reader = csv.DictReader(csvfile)
+        for i, row in enumerate(csv_reader):
+            if i == most_similar_index:
+                recommended_info = row
+                break
+
+    # 선택된 행 대신 추천된 행 활용
+    selected_rows.append(recommended_info)
 
     return render(request, 'travel/recommend.html',
-                  {'travel_response': travel_response, 'selected_rows': selected_rows})
-
+                  {'travel_response': travel_response, 'selected_rows': selected_rows, 'recommended_info': recommended_info})
 
 def get_row_by_id(travel_id):
     with open(r'C:\Users\chltm\PycharmProjects\djangoProject1\Django-registration-and-login-system\키워드.csv', newline='', encoding='utf-8-sig') as csvfile:
