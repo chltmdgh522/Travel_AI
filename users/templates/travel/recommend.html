@@ -19,10 +19,10 @@
     <div class="collapse navbar-collapse" id="navbarCollapse">
         <div class="navbar-nav ml-auto">
             {% if user.is_authenticated %}
-            <a href="{% url 'users-profile' %}" class="nav-item nav-link">마이프로필</a>
-            <a href="{% url 'logout' %}" class="nav-item nav-link">로그아웃</a>
+                <a href="{% url 'users-profile' %}" class="nav-item nav-link">마이프로필</a>
+                <a href="{% url 'logout' %}" class="nav-item nav-link">로그아웃</a>
             {% else %}
-            <a href="{% url 'login' %}" class="nav-item nav-link">로그인</a>
+                <a href="{% url 'login' %}" class="nav-item nav-link">로그인</a>
             {% endif %}
         </div>
     </div>
@@ -31,25 +31,28 @@
 <div class="container mt-5">
     <h2 class="mb-4">여행 일정</h2>
     <div class="card-deck">
-        {% if selected_rows %}
-            {% for row in selected_rows %}
-                <a href="recommend/{{ row.사이트주소 }}">
-                <!-- 여행지와 여행 일정 카드 -->
-                    <div class="card">
-                        <div class="card-body">
-                            <h5 class="card-title">{{ row.나라 }}</h5>
-                            <p class="card-text">
-                                <strong>여행지:</strong> {{ row.여행지 }}
-                                <strong>기간:</strong> {{ row.기간 }}
-                            </p>
-                        </div>
-                    </div>
-                </a>
-                {% endfor %}
-            {% else %}
-                <p>일치하는 정보가 없습니다... 죄송합니다. 업데이트 할게요!</p>
-            {% endif %}
+        {% if recommendations.empty %}
+            <p>추천된 여행지가 없습니다.</p>
+        {% else %}
+            {% for group in recommendations %}
+                <div class="card-group">
+                    <a href="recommend/{{ forloop.counter }}">
+                        {% for index, row in group.iterrows %}
 
+                            <!-- 여행지와 여행 일정 카드 -->
+                            <div class="card">
+                                <div class="card-body">
+                                    <h5 class="card-title">{{ row.country }}</h5>
+                                    <p class="card-text">{{ travel_response.duration }}</p>
+                                    <p class="card-text">{{ row.keyword }}</p>
+                                    <!-- 다른 필드들도 필요에 따라 출력 -->
+                                </div>
+                            </div>
+                            </a>
+                        {% endfor %}
+                </div>
+            {% endfor %}
+        {% endif %}
 
         <h3>추천 받은 일정</h3>
         {% if travel_response %}

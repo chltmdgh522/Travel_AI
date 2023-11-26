@@ -5,16 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>여행 일정</title>
 
-
     <!-- 부트스트랩 CSS 링크 추가 -->
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+          integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
     <style>
         /* 여기에 사용자 정의 스타일 추가 가능 */
         body {
             background-color: #f8f9fa;
             padding-top: 50px; /* Navbar가 페이지 내용을 가리지 않도록 조절 */
-
         }
+
         .container {
             margin-top: 50px;
         }
@@ -27,255 +27,162 @@
     <div class="collapse navbar-collapse" id="navbarCollapse">
         <div class="navbar-nav ml-auto">
             {% if user.is_authenticated %}
-            <a href="{% url 'users-profile' %}" class="nav-item nav-link">마이프로필</a>
-            <a href="{% url 'logout' %}" class="nav-item nav-link">로그아웃</a>
+                <a href="{% url 'users-profile' %}" class="nav-item nav-link">마이프로필</a>
+                <a href="{% url 'logout' %}" class="nav-item nav-link">로그아웃</a>
             {% else %}
-            <a href="{% url 'login' %}" class="nav-item nav-link">로그인</a>
+                <a href="{% url 'login' %}" class="nav-item nav-link">로그인</a>
             {% endif %}
         </div>
     </div>
 </nav>
 
+<div id="map" style="height: 400px; width: 100%;"></div>
 
- <div id="map" style="height: 400px; width: 100%;"></div>
-    <script>
-    var map; // 전역으로 map 변수 정의
+<script>
+    var map;
     var markers = [];
-    function initMap(callback) {
+    var directionsService;
+    var directionsRenderer;
+    var originMarker = null;
+    var destinationMarker = null;
+
+    function initMap() {
         map = new google.maps.Map(document.getElementById('map'), {
-            center: {lat: {{ row_data.위도1 }}, lng: {{ row_data.경도1 }}},
+            center: {lat: 35, lng: 37},
             zoom: 15,
         });
 
-        // 여행 일정의 위치 데이터 배열
+        directionsService = new google.maps.DirectionsService();
+        directionsRenderer = new google.maps.DirectionsRenderer({
+            map: map,
+            suppressMarkers: true,
+        });
 
         var locations = [];
-        {% if travel_duration >= 1 %}
-            locations.push({lat: {{ row_data.위도1 }}, lng: {{ row_data.경도1 }}});
-        {% endif %}
+        var cnt = 1;
 
-        {% if travel_duration >= 2 %}
-            locations.push({lat: {{ row_data.위도2 }}, lng: {{ row_data.경도2 }}});
-        {% endif %}
+        {% for index, result in results.iterrows %}
+            locations.push({
+                lat: {{ result.latitude }},
+                lng: {{ result.longitude }},
+                label: cnt,
+                name: '{{ result.name }}'
+            });
+            cnt++;
+        {% endfor %}
 
-        {% if travel_duration >= 3 %}
-            locations.push({lat: {{ row_data.위도3 }}, lng: {{ row_data.경도3 }}});
-        {% endif %}
 
-        {% if travel_duration >= 4 %}
-            locations.push({lat: {{ row_data.위도4 }}, lng: {{ row_data.경도4 }}});
-        {% endif %}
+        var waypoints = [];
+        var origin = null;
+        var destination = null;
 
-        {% if travel_duration >= 5 %}
-            locations.push({lat: {{ row_data.위도5 }}, lng: {{ row_data.경도5 }}});
-        {% endif %}
-
-        {% if travel_duration >= 6 %}
-            locations.push({lat: {{ row_data.위도6 }}, lng: {{ row_data.경도6 }}});
-        {% endif %}
-
-        {% if travel_duration >= 7 %}
-            locations.push({lat: {{ row_data.위도7 }}, lng: {{ row_data.경도7 }}});
-        {% endif %}
-
-        {% if travel_duration >= 8 %}
-            locations.push({lat: {{ row_data.위도8 }}, lng: {{ row_data.경도8 }}});
-        {% endif %}
-
-        {% if travel_duration >= 9 %}
-            locations.push({lat: {{ row_data.위도9 }}, lng: {{ row_data.경도9 }}});
-        {% endif %}
-
-        // 각 위치에 마커 추가
         for (var i = 0; i < locations.length; i++) {
-            console.log(locations[i]);
             var marker = new google.maps.Marker({
                 position: locations[i],
                 map: map,
-                title: 'u',
+                title: locations[i].name,
+                label: locations[i].label.toString(),
             });
 
-            // 클릭 이벤트 리스너 추가
-    marker.addListener('click', function() {
-        // 클릭한 마커의 위치 정보를 콘솔에 출력
-         var markerPosition = this.getPosition();
+            marker.addListener('click', function () {
+                if (originMarker === null) {
+                    originMarker = this;
+                    originMarker.setIcon('http://maps.google.com/mapfiles/ms/icons/green-dot.png');
+                } else if (destinationMarker === null) {
+                    destinationMarker = this;
+                    destinationMarker.setIcon('http://maps.google.com/mapfiles/ms/icons/red-dot.png');
+                    calculateDistanceAndDisplayRoute(originMarker.getPosition(), destinationMarker.getPosition());
+                    originMarker.setIcon(null);
+                    destinationMarker.setIcon(null);
+                    originMarker = null;
+                    destinationMarker = null;
+                }
+            });
 
-        // 정보 창 생성
-        var infoWindow = new google.maps.InfoWindow({
-            content: '여행지 위치는 ' + markerPosition + " 여기에요! "
+            markers.push(marker);
 
-        });
-
-        infoWindow.open(map, this);
-    });
-    markers.push(marker);
+            if (i === 0) {
+                origin = marker.getPosition();
+            } else if (i === locations.length - 1) {
+                destination = marker.getPosition();
+            } else {
+                waypoints.push({
+                    location: marker.getPosition(),
+                    stopover: true,
+                });
+            }
         }
-
     }
 
-    function highlightMarker(markerIndex, latitude, longitude) {
-        console.log("gkdl")
-    // 이동할 위치 생성
-    var newPosition = new google.maps.LatLng(latitude, longitude);
+    function calculateDistanceAndDisplayRoute(origin, destination, waypoints) {
+        var directionsService = new google.maps.DirectionsService();
+        var request = {
+            origin: origin,
+            destination: destination,
+            provideRouteAlternatives: true,
+            travelMode: google.maps.TravelMode.DRIVING,
+            drivingOptions: {
+                departureTime: new Date(),
+                trafficModel: 'pessimistic'
+            }
+        };
 
-    // 해당 마커로 지도 이동
-    map.panTo(newPosition);
+        directionsService.route(request, function (result, status) {
+            if (status == 'OK') {
+                var leg = result.routes[0].legs[0];
+                alert('이동 거리: ' + leg.distance.text + '예상 이동 시간: ' + leg.duration.text + '현재 교통 상황을 고려한 예상 이동 시간: ' + leg.duration_in_traffic.text);
 
-    // 선택한 마커 강조 효과 등을 추가할 수 있습니다.
-    // 예: markers[markerIndex].setAnimation(google.maps.Animation.BOUNCE);
-}
-    </script>
- <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBuTKuky_Mpk7I2XA4oL0RI1lrV0Aq7FKs&callback=initMap"
-            async defer></script>
+                // 기존 경로 지우기
+                if (directionsRenderer) {
+                    directionsRenderer.setMap(null);
+                }
+
+                directionsRenderer = new google.maps.DirectionsRenderer({
+                    map: map,
+                    suppressMarkers: true,
+                });
+                directionsRenderer.setDirections(result);
+            }
+        });
+    }
+</script>
+
+
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBuTKuky_Mpk7I2XA4oL0RI1lrV0Aq7FKs&callback=initMap" async
+        defer></script>
 
 <div class="container">
-    <h2 class="mb-4">🚀{{row_data.기간 }}의 여행일정</h2>
+    <h2 class="mb-4">🚀{{ travel_response.duration }}의 여행일정</h2>
 
-        {% if travel_duration >= 1 %}
-            <div class="card" id="location-card-{{ 1 }}"  onclick="highlightMarker(1,{{ row_data.위도1 }}, {{ row_data.경도1 }})">
-                <div class="card-body">
-                    <h5 class="card-title">1일째😊</h5>
-                    <p class="card-text">
-                        <strong>여행지:</strong> {{ row_data.여행지1}}
-                        <br>
-                        <strong>위도:</strong> {{ row_data.위도1 }}
-                        <strong>경도:</strong> {{ row_data.경도1}}
-                        <br>
-                        <strong>여행 키워드:</strong> {{ row_data.키워드 }}
-                    </p>
-                </div>
-            </div>
-    {% endif %}
-        {% if travel_duration >= 2 %}
-            <div class="card" id="location-card-{{ 2 }}" onclick="highlightMarker(2,{{ row_data.위도2 }}, {{ row_data.경도2 }})">
-                <div class="card-body">
-                    <h5 class="card-title">2일째⭐</h5>
-                    <p class="card-text">
-                        <strong>여행지:</strong> {{ row_data.여행지2}}
-                        <br>
-                        <strong>위도:</strong> {{ row_data.위도2 }}
-                        <strong>경도:</strong> {{ row_data.경도2}}
-                        <br>
-                        <strong>여행 키워드:</strong> {{ row_data.키워드 }}
-                    </p>
-                </div>
-            </div>
-{% endif %}
-        {% if travel_duration >= 3 %}
-            <div class="card" id="location-card-{{ 3 }}" onclick="highlightMarker(3,{{ row_data.위도3 }}, {{ row_data.경도3 }})">
-                <div class="card-body">
-                    <h5 class="card-title">3박</h5>
-                    <p class="card-text">
-                        <strong>여행지:</strong> {{ row_data.여행지3}}
-                        <br>
-                        <strong>위도:</strong> {{ row_data.위도3 }}
-                        <strong>경도:</strong> {{ row_data.경도3}}
-                        <br>
-                        <strong>여행 키워드:</strong> {{ row_data.키워드 }}
-                    </p>
-                </div>
-            </div>
-{% endif %}
-        {% if travel_duration >= 4 %}
-            <div class="card" id="location-card-{{ 4 }}" onclick="highlightMarker(4,{{ row_data.위도4 }}, {{ row_data.경도4 }})">
-                <div class="card-body">
-                    <h5 class="card-title">4박</h5>
-                    <p class="card-text">
-                        <strong>여행지:</strong> {{ row_data.여행지4}}
-                        <br>
-                        <strong>위도:</strong> {{ row_data.위도4 }}
-                        <strong>경도:</strong> {{ row_data.경도4}}
-                        <br>
-                        <strong>여행 키워드:</strong> {{ row_data.키워드 }}
-                    </p>
-                </div>
-            </div>
-{% endif %}
-        {% if travel_duration >= 5 %}
-            <div class="card" id="location-card-{{ 5 }}" onclick="highlightMarker(5,{{ row_data.위도5 }}, {{ row_data.경도5 }})">
-                <div class="card-body">
-                    <h5 class="card-title">5박</h5>
-                    <p class="card-text">
-                        <strong>여행지:</strong> {{ row_data.여행지5}}
-                        <br>
-                        <strong>위도:</strong> {{ row_data.위도5 }}
-                        <strong>경도:</strong> {{ row_data.경도5}}
-                        <br>
-                        <strong>여행 키워드:</strong> {{ row_data.키워드 }}
-                    </p>
-                </div>
-            </div>
-{% endif %}
-        {% if travel_duration >= 6 %}
-            <div class="card" id="location-card-{{ 6 }}" onclick="highlightMarker(6,{{ row_data.위도6 }}, {{ row_data.경도6 }})">
-                <div class="card-body">
-                    <h5 class="card-title">6박</h5>
-                    <p class="card-text">
-                        <strong>여행지:</strong> {{ row_data.여행지6}}
-                        <br>
-                        <strong>위도:</strong> {{ row_data.위도6 }}
-                        <strong>경도:</strong> {{ row_data.경도6}}
-                        <br>
-                        <strong>여행 키워드:</strong> {{ row_data.키워드 }}
-                    </p>
-                </div>
-            </div>
-{% endif %}
-        {% if travel_duration >= 7 %}
-            <div class="card" id="location-card-{{ 7 }}" onclick="highlightMarker(7,{{ row_data.위도7 }}, {{ row_data.경도7 }})">
-                <div class="card-body">
-                    <h5 class="card-title">7박</h5>
-                    <p class="card-text">
-                        <strong>여행지:</strong> {{ row_data.여행지7}}
-                        <br>
-                        <strong>위도:</strong> {{ row_data.위도7 }}
-                        <strong>경도:</strong> {{ row_data.경도7}}
-                        <br>
-                        <strong>여행 키워드:</strong> {{ row_data.키워드7 }}
-                    </p>
-                </div>
-            </div>
-{% endif %}
-        {% if travel_duration >= 8 %}
-            <div class="card" id="location-card-{{ 8 }}" onclick="highlightMarker(8,{{ row_data.위도8 }}, {{ row_data.경도8 }})">
-                <div class="card-body">
-                    <h5 class="card-title">8박</h5>
-                    <p class="card-text">
-                        <strong>여행지:</strong> {{ row_data.여행지8}}
-                        <br>
-                        <strong>위도:</strong> {{ row_data.위도8 }}
-                        <strong>경도:</strong> {{ row_data.경도8}}
-                        <br>
-                        <strong>여행 키워드:</strong> {{ row_data.키워드 }}
-                    </p>
-                </div>
-            </div>
-{% endif %}
-        {% if travel_duration >= 9 %}
-            <div class="card" id="location-card-{{ 9 }}" onclick="highlightMarker(9,{{ row_data.위도9 }}, {{ row_data.경도9 }})">
-                <div class="card-body">
-                    <h5 class="card-title">9일째</h5>
-                    <p class="card-text">
-                        <strong>여행지:</strong> {{ row_data.여행지9}}
-                        <br>
-                        <strong>위도:</strong> {{ row_data.위도9 }}
-                        <strong>경도:</strong> {{ row_data.경도9}}
-                        <br>
-                        <strong>여행 키워드:</strong> {{ row_data.키워드 }}
-                    </p>
-                </div>
-            </div>
-                {% endif %}
-
-
-
+    {% for index, result in results.iterrows %}
+    <div class="card" id="location-card-{{ forloop.counter }}">
+        <div class="card-body">
+            <h5 class="card-title">{{ forloop.counter }}일째😊</h5>
+            <p class="card-text">
+                <strong>여행지:</strong> {{ result.name }}
+                <br>
+                <strong>위도:</strong> {{ result.latitude }}
+                <strong>경도:</strong> {{ result.longitude }}
+                <br>
+                <strong>여행 키워드:</strong> {{ result.keyword }}
+            </p>
+        </div>
+    </div>
+{% endfor %}
 
 </div>
 
+
 <!-- 부트스트랩 JS 및 Popper.js, jQuery 스크립트 추가 -->
-<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+        integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+        crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"
+        integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1"
+        crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
+        integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
+        crossorigin="anonymous"></script>
 
 </body>
 </html>

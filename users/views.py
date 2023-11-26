@@ -1,7 +1,9 @@
 import csv
 import os
 from audioop import reverse
-
+import difflib
+from konlpy.tag import Okt
+import pandas as pd
 from django.shortcuts import render, redirect
 from django.urls import reverse_lazy
 from django.contrib.auth.views import LoginView, PasswordResetView, PasswordChangeView
@@ -10,8 +12,10 @@ from django.contrib.messages.views import SuccessMessageMixin
 from django.views import View
 from django.contrib.auth.decorators import login_required
 from .models import TravelResponse
+from .models import TravelDestination
 from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.metrics.pairwise import cosine_similarity
+from sklearn.metrics.pairwise import cosine_similarity, linear_kernel
+from sklearn.feature_extraction.text import CountVectorizer
 
 from .forms import RegisterForm, LoginForm, UpdateUserForm, UpdateProfileForm
 from datetime import datetime
@@ -98,6 +102,7 @@ def travel_view(request):
     # travel_response가 존재할 경우에는 HttpResponse 객체 반환
     return (render(request, 'travel/travel.html', {'travel_response': travel_response}))
 
+
 # @login_required
 # def recommend_view(request):
 #     try:
@@ -126,7 +131,7 @@ def travel_view(request):
 #                   {'travel_response': travel_response, 'selected_rows': selected_rows})
 
 @login_required
-def recommend_view(request):
+def recommend_viw(request):
     try:
         travel_response = TravelResponse.objects.get(user=request.user)
     except TravelResponse.DoesNotExist:
@@ -146,7 +151,8 @@ def recommend_view(request):
 
         # TF-IDF 벡터화
         vectorizer = TfidfVectorizer()
-        vectorized_data = vectorizer.fit_transform([selected_info] + [f"{row['나라']} {row['기간']} {row['키워드']}" for row in csv_reader])
+        vectorized_data = vectorizer.fit_transform(
+            [selected_info] + [f"{row['나라']} {row['기간']} {row['키워드']}" for row in csv_reader])
 
         # 코사인 유사도 계산
         cosine_similarities = cosine_similarity(vectorized_data[0], vectorized_data[1:]).flatten()
@@ -168,30 +174,152 @@ def recommend_view(request):
     selected_rows.append(recommended_info)
 
     return render(request, 'travel/recommend.html',
-                  {'travel_response': travel_response, 'selected_rows': selected_rows, 'recommended_info': recommended_info})
+                  {'travel_response': travel_response, 'selected_rows': selected_rows,
+                   'recommended_info': recommended_info})
 
-def get_row_by_id(travel_id):
-    with open(r'C:\Users\chltm\PycharmProjects\djangoProject1\Django-registration-and-login-system\키워드.csv', newline='', encoding='utf-8-sig') as csvfile:
-        reader = csv.DictReader(csvfile)
-        for row in reader:
-            if row['사이트주소'] == travel_id:
-                return row
-    return None
+
+@login_required
+def recommend_view(request):
+    try:
+        travel_response = TravelResponse.objects.get(user=request.user)  # 관련 이름이 'travelresponse'인 경우
+    except TravelResponse.DoesNotExist:
+        # 사용자에 대한 TravelResponse가 없는 경우 처리
+        travel_response = None
+
+    travel_from_db = TravelDestination.objects.values('country', 'name', 'keyword', 'latitude', 'longitude', 'id')
+    recommendations = ai1(travel_response, travel_from_db)
+
+
+    return render(request, 'travel/recommend.html',
+                  {'travel_response': travel_response, 'recommendations': recommendations})
+
+
+def ai1(travel_response, travel_from_db):
+    # QuerySet을 Pandas DataFrame으로 변환
+    travels_df = pd.DataFrame(list(travel_from_db))
+    travel_duration = int(travel_response.duration.split('박')[0])
+    # 한글 자연어 처리를 위한 형태소 분석기(Okt) 사용
+    okt = Okt()
+
+    # keyword을 형태소로 분리한 후 공백으로 합치는 함수 정의
+    def tokenize(keyword):
+        return ' '.join(okt.morphs(keyword))
+
+    # keyword에 대해 형태소 분석 및 벡터화
+    travels_df['Tokenized_keyword'] = travels_df['keyword'].apply(tokenize)
+
+    # TF-IDF 벡터화
+    tfidf_vectorizer = TfidfVectorizer()
+    tfidf_matrix = tfidf_vectorizer.fit_transform(
+        travels_df['Tokenized_keyword'])
+
+    # 코사인 유사도 계산
+    cosine_sim = linear_kernel(tfidf_matrix, tfidf_matrix)
+
+    def recommend_travel_genre(title, travel_duration, cosine_sim=cosine_sim):
+        idx = travels_df.loc[travels_df['country'] == title].index[0]
+        sim_scores = list(enumerate(cosine_sim[idx]))
+        sim_scores = sorted(sim_scores, key=lambda x: x[1], reverse=True)
+
+        # travel_duration에 따라 추천하는 개수를 조절
+        num_recommendations = travel_duration * 3
+        sim_scores = sim_scores[1:num_recommendations + 1]  # 계산된 수에 맞게 범위 조절
+
+        travel_indices = [i[0] for i in sim_scores]
+
+        group_size = travel_duration
+        num_groups = len(travel_indices) // group_size
+        recommended_groups = []
+        for i in range(num_groups):
+            start_index = i * group_size
+            end_index = (i + 1) * group_size
+            recommended_travels = travels_df[['country', 'keyword', 'name', 'latitude', 'longitude', 'id']].iloc[travel_indices[start_index:(i + 1) * group_size-1]]
+            recommended_groups.append(recommended_travels)
+        return recommended_groups
+
+    input_travel = travel_response.travel_style
+    input_duration = int(travel_response.duration.split('박')[0])
+
+    # 여행 추천
+    recommendations = recommend_travel_genre(input_travel, input_duration)
+    #print(f"Recommendations for {input_travel}:")
+    #print(recommendations[0])
+
+    return recommendations
+
+
+def ai(travel_response, travel_from_db):
+    # QuerySet을 Pandas DataFrame으로 변환
+    travels_df = pd.DataFrame(list(travel_from_db))
+    travel_duration = int(travel_response.duration.split('박')[0])
+    # 한글 자연어 처리를 위한 형태소 분석기(Okt) 사용
+    okt = Okt()
+
+    # keyword을 형태소로 분리한 후 공백으로 합치는 함수 정의
+    def tokenize(keyword):
+        return ' '.join(okt.morphs(keyword))
+
+    # keyword에 대해 형태소 분석 및 벡터화
+    travels_df['Tokenized_keyword'] = travels_df['keyword'].apply(tokenize)
+
+    # TF-IDF 벡터화
+    tfidf_vectorizer = TfidfVectorizer()
+    tfidf_matrix = tfidf_vectorizer.fit_transform(
+        travels_df['Tokenized_keyword'])
+
+    # 코사인 유사도 계산
+    cosine_sim = linear_kernel(tfidf_matrix, tfidf_matrix)
+
+    def recommend_travel_genre(title, travel_duration, cosine_sim=cosine_sim):
+        idx = travels_df.loc[travels_df['country'] == title].index[0]
+        sim_scores = list(enumerate(cosine_sim[idx]))
+        sim_scores = sorted(sim_scores, key=lambda x: x[1], reverse=True)
+
+        # travel_duration에 따라 추천하는 개수를 조절
+        num_recommendations = travel_duration * 3
+        sim_scores = sim_scores[1:num_recommendations + 1]  # 계산된 수에 맞게 범위 조절
+
+        travel_indices = [i[0] for i in sim_scores]
+
+        group_size = travel_duration
+        num_groups = len(travel_indices) // group_size
+        recommended_groups = []
+        for i in range(num_groups):
+            start_index = i * group_size
+            end_index = (i + 1) * group_size
+            recommended_travels = travels_df[['country', 'keyword', 'name', 'latitude', 'longitude', 'id']].iloc[travel_indices[start_index:end_index]]
+            recommended_groups.append(recommended_travels)
+        return recommended_groups
+
+    input_travel = travel_response.travel_style
+    input_duration = int(travel_response.duration.split('박')[0])
+
+    # 여행 추천
+    recommendations = recommend_travel_genre(input_travel, input_duration)
+    #print(f"Recommendations for {input_travel}:")
+    #print(recommendations[0])
+
+    return recommendations
 
 
 @login_required
 def site_view(request, travel_id):
-    # travel_id에 해당하는 행을 CSV 파일에서 가져옴
-    row_data = get_row_by_id(travel_id)
-    print(row_data)
+    try:
+        travel_response = TravelResponse.objects.get(user=request.user)  # 관련 이름이 'travelresponse'인 경우
+    except TravelResponse.DoesNotExist:
+        # 사용자에 대한 TravelResponse가 없는 경우 처리
+        travel_response = None
 
-    if row_data and '기간' in row_data:
-        travel_duration = int(row_data['기간'].split('박')[0])  # '3박4일'에서 '3'을 추출하고 숫자로 변환
-        travel_range = range(1, travel_duration + 1)
-    else:
-        travel_range = []
+    travel_duration = int(travel_response.duration.split('박')[0])
+    travel_from_db = TravelDestination.objects.values('country', 'name', 'keyword', 'latitude', 'longitude', 'id')
+    recommendations = ai(travel_response, travel_from_db)
+
+    result = recommendations[int(travel_id)-1]
+    print(result.name)
+
     # 가져온 데이터를 템플릿으로 전달
-    return render(request, 'travel/site.html', {'travel_id': travel_id, 'row_data': row_data, 'travel_duration': travel_duration})
+    return render(request, 'travel/site.html',
+                  {'travel_id': travel_id, 'results': result, 'travel_response': travel_response})
 
 
 @login_required
@@ -215,19 +343,20 @@ def profile(request):
 @login_required
 def plan_view1(request):
     return render(request, 'travel/plan1.html')
+
+
 @login_required
 def save_plan1(request):
-
-        # 사용자에 대한 TravelResponse 인스턴스를 가져오거나 생성
+    # 사용자에 대한 TravelResponse 인스턴스를 가져오거나 생성
     travel_response, created = TravelResponse.objects.get_or_create(user=request.user)
 
-        # 폼 데이터 가져오기
+    # 폼 데이터 가져오기
     country = request.POST.get('country')
 
-        # TravelResponse 모델 업데이트
+    # TravelResponse 모델 업데이트
     travel_response.country = country
 
-        # 업데이트된 모델 저장
+    # 업데이트된 모델 저장
     travel_response.save()
 
     return redirect('travel/plan2')  # 저장 후 여행 폼으로 리디렉션\
@@ -264,6 +393,8 @@ def save_plan2(request):
         travel_response.save()
 
         return redirect('travel/plan3')  # 저장 후 여행 폼으로 리디렉션
+
+
 @login_required
 def plan_view3(request):
     return render(request, 'travel/plan3.html')
@@ -286,6 +417,7 @@ def save_plan3(request):
 
         return redirect('travel/plan4')  # 저장 후 여행 폼으로 리디렉션
 
+
 @login_required
 def plan_view4(request):
     return render(request, 'travel/plan4.html')
@@ -299,7 +431,6 @@ def save_plan4(request):
 
         # 폼 데이터 가져오기
         travel_style = request.POST.get('travel_style')
-
 
         # TravelResponse 모델 업데이트
         travel_response.travel_style = travel_style
@@ -331,5 +462,3 @@ def save_plan5(request):
         travel_response.save()
 
         return redirect('recommend')  # 저장 후 여행 폼으로 리디렉션
-
-

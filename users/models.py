@@ -38,3 +38,14 @@ class TravelResponse(models.Model):
 
     def __str__(self):
         return f'{self.user.username} - {self.country} - {self.duration} -{self.departure_date} - {self.arrival_date} - {self.companions} - {self.travel_style} - {self.travel_schedule}'
+
+
+class TravelDestination(models.Model):
+    name = models.CharField(max_length=255)
+    keyword = models.TextField()
+    latitude = models.FloatField(null=True, blank=True)  # 추가: 위도
+    longitude = models.FloatField(null=True, blank=True)  # 추가: 경도
+    country = models.CharField(max_length=255, null=True, blank=True)  # 추가: 나라
+
+    def __str__(self):
+        return self.name
