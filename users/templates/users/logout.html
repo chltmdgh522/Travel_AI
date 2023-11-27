@@ -1,15 +1,14 @@
 {% extends "users/base.html" %}
 {% block title %}Logout{% endblock title %}
 {% block content %}
-    <div class="card" style="width: 18rem;">
+    <div class="card text-center" style="width: 18rem; margin: 0 auto;">
         <div class="card-body">
-        <h5 class="card-title">로그아웃</h5>
-        <p class="card-text">
-            본 서비스를 이용해주셔서 감사합니다. 다음에 또 이용 부탁드립니다.
-        </p>
-        <br><hr><a href="{% url 'login' %}" class="btn btn-primary">로그인</a>
+            <h5 class="card-title" style="font-size: 2em;">로그아웃</h5>
+            <p class="card-text" style="font-size: 1.3em; opacity: 0.8;">
+                본 서비스를 이용해주셔서 감사합니다.
+            </p>
+            <br>
+            <a href="{% url 'login' %}" class="btn btn-primary">로그인</a>
         </div>
     </div>
-
-
 {% endblock content %}

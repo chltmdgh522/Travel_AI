@@ -5,9 +5,26 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
     <style>
-        /* 추가적인 스타일링을 위한 CSS를 여기에 추가하세요 */
         body {
-            padding-top: 50px; /* Navbar가 페이지 내용을 가리지 않도록 조절 */
+            background-image: url('/media/intro.jpg'); /* 이미지 파일 경로에 맞게 수정 */
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-position: center center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-family: Noto Sans;
+            margin: 0;
+        }
+        label {
+            font-size: 1.2em;
+        }
+        .container {
+            border: 2px solid #000;
+            border-radius: 10px;
+            padding: 20px;
+            background-color: rgba(255, 255, 255, 0.5);
         }
     </style>
     <title>여행 일정</title>
@@ -19,16 +36,16 @@
     <div class="collapse navbar-collapse" id="navbarCollapse">
         <div class="navbar-nav ml-auto">
             {% if user.is_authenticated %}
-                <a href="{% url 'users-profile' %}" class="nav-item nav-link">마이프로필</a>
-                <a href="{% url 'logout' %}" class="nav-item nav-link">로그아웃</a>
+            <a href="{% url 'users-profile' %}" class="nav-item nav-link">마이프로필</a>
+            <a href="{% url 'logout' %}" class="nav-item nav-link">로그아웃</a>
             {% else %}
-                <a href="{% url 'login' %}" class="nav-item nav-link">로그인</a>
+            <a href="{% url 'login' %}" class="nav-item nav-link">로그인</a>
             {% endif %}
         </div>
     </div>
 </nav>
 
-<div class="container mt-5">
+<div class="container mt-5" style="background-color: rgba(255, 255, 255, 0.5);">
     <h2 class="mb-4">여행 일정</h2>
     <div class="card-deck">
         {% if recommendations.empty %}

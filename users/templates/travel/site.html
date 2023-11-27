@@ -11,7 +11,10 @@
     <style>
         /* 여기에 사용자 정의 스타일 추가 가능 */
         body {
-            background-color: #f8f9fa;
+            background-image: url('/media/intro2.jpg'); /* 이미지 파일 경로에 맞게 수정 */
+
+            background-repeat: no-repeat;
+            background-size: cover;
             padding-top: 50px; /* Navbar가 페이지 내용을 가리지 않도록 조절 */
         }
 
@@ -36,7 +39,8 @@
     </div>
 </nav>
 
-<div id="map" style="height: 400px; width: 100%;"></div>
+
+<div id="map" style="height: 400px; width: 78%; margin: 0 auto; opacity: 0.8;"></div>
 
 <script>
     var map;
@@ -47,10 +51,12 @@
     var destinationMarker = null;
 
     function initMap() {
+        {% for index, result in results.iterrows %}
         map = new google.maps.Map(document.getElementById('map'), {
-            center: {lat: 35, lng: 37},
+            center: {lat: {{ result.latitude}}, lng: {{ result.longitude }}},
             zoom: 15,
         });
+        {% endfor %}
 
         directionsService = new google.maps.DirectionsService();
         directionsRenderer = new google.maps.DirectionsRenderer({
@@ -130,7 +136,8 @@
         directionsService.route(request, function (result, status) {
             if (status == 'OK') {
                 var leg = result.routes[0].legs[0];
-                alert('이동 거리: ' + leg.distance.text + '예상 이동 시간: ' + leg.duration.text + '현재 교통 상황을 고려한 예상 이동 시간: ' + leg.duration_in_traffic.text);
+                alert('이동 거리: ' + leg.distance.text + ', 예상 이동 시간: ' + leg.duration.text +
+                    ', 현재 교통 상황을 고려한 예상 이동 시간: ' + leg.duration_in_traffic.text);
 
                 // 기존 경로 지우기
                 if (directionsRenderer) {
@@ -155,20 +162,20 @@
     <h2 class="mb-4">🚀{{ travel_response.duration }}의 여행일정</h2>
 
     {% for index, result in results.iterrows %}
-    <div class="card" id="location-card-{{ forloop.counter }}">
-        <div class="card-body">
-            <h5 class="card-title">{{ forloop.counter }}일째😊</h5>
-            <p class="card-text">
-                <strong>여행지:</strong> {{ result.name }}
-                <br>
-                <strong>위도:</strong> {{ result.latitude }}
-                <strong>경도:</strong> {{ result.longitude }}
-                <br>
-                <strong>여행 키워드:</strong> {{ result.keyword }}
-            </p>
+        <div class="card" id="location-card-{{ forloop.counter }}">
+            <div class="card-body">
+                <h5 class="card-title">{{ forloop.counter }}일째😊</h5>
+                <p class="card-text">
+                    <strong>여행지:</strong> {{ result.name }}
+                    <br>
+                    <strong>위도:</strong> {{ result.latitude }}
+                    <strong>경도:</strong> {{ result.longitude }}
+                    <br>
+                    <strong>여행 키워드:</strong> {{ result.keyword }}
+                </p>
+            </div>
         </div>
-    </div>
-{% endfor %}
+    {% endfor %}
 
 </div>
 

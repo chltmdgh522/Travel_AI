@@ -95,12 +95,27 @@ class ChangePasswordView(SuccessMessageMixin, PasswordChangeView):
 def travel_view(request):
     # 사용자에 대한 TravelResponse 인스턴스 가져오기
     try:
-        travel_response = TravelResponse.objects.get(user=request.user)
+        travel_response = TravelResponse.objects.get(user=request.user)  # 관련 이름이 'travelresponse'인 경우
     except TravelResponse.DoesNotExist:
+        # 사용자에 대한 TravelResponse가 없는 경우 처리
+        travel_response = None
         return render(request, 'travel/travel.html', {'travel_response': None})
 
-    # travel_response가 존재할 경우에는 HttpResponse 객체 반환
-    return (render(request, 'travel/travel.html', {'travel_response': travel_response}))
+    travel_from_db = TravelDestination.objects.values('country', 'name', 'keyword', 'latitude', 'longitude', 'id')
+
+    matching_country_travels = [travel for travel in travel_from_db if
+                                travel['country'] == travel_response.country or travel['country'] == '역사'
+                                or travel['country'] == '자연'
+                                or travel['country'] == 'SNS'
+                                or travel['country'] == '문화'
+                                or travel['country'] == '관광'
+                                or travel['country'] == '먹방']
+
+    recommendations = ai1(travel_response, matching_country_travels)
+
+
+    return render(request, 'travel/travel.html',
+                  {'travel_response': travel_response, 'recommendations': recommendations})
 
 
 # @login_required
@@ -130,52 +145,6 @@ def travel_view(request):
 #     return render(request, 'travel/recommend.html',
 #                   {'travel_response': travel_response, 'selected_rows': selected_rows})
 
-@login_required
-def recommend_viw(request):
-    try:
-        travel_response = TravelResponse.objects.get(user=request.user)
-    except TravelResponse.DoesNotExist:
-        travel_response = None
-
-    # 새로운 기능: 추천 시스템
-    csv_file_path = r'C:\Users\chltm\PycharmProjects\djangoProject1\Django-registration-and-login-system\키워드.csv'
-    os.chdir(r"C:\Users\chltm\PycharmProjects\djangoProject1\Django-registration-and-login-system")
-    selected_rows = []
-
-    # CSV 파일 읽기
-    with open(csv_file_path, newline='', encoding='utf-8-sig') as csvfile:
-        csv_reader = csv.DictReader(csvfile)
-
-        # 선택받은 정보 가져오기
-        selected_info = f"{travel_response.country} {travel_response.duration} {travel_response.travel_style}"
-
-        # TF-IDF 벡터화
-        vectorizer = TfidfVectorizer()
-        vectorized_data = vectorizer.fit_transform(
-            [selected_info] + [f"{row['나라']} {row['기간']} {row['키워드']}" for row in csv_reader])
-
-        # 코사인 유사도 계산
-        cosine_similarities = cosine_similarity(vectorized_data[0], vectorized_data[1:]).flatten()
-        print(cosine_similarities)
-
-        # 가장 유사한 여행 정보 선택
-        most_similar_index = cosine_similarities.argmax()
-
-        print(most_similar_index)
-    # CSV 파일을 다시 열어서 가장 유사한 여행 정보를 가져옴
-    with open(csv_file_path, newline='', encoding='utf-8-sig') as csvfile:
-        csv_reader = csv.DictReader(csvfile)
-        for i, row in enumerate(csv_reader):
-            if i == most_similar_index:
-                recommended_info = row
-                break
-
-    # 선택된 행 대신 추천된 행 활용
-    selected_rows.append(recommended_info)
-
-    return render(request, 'travel/recommend.html',
-                  {'travel_response': travel_response, 'selected_rows': selected_rows,
-                   'recommended_info': recommended_info})
 
 
 @login_required
@@ -187,7 +156,17 @@ def recommend_view(request):
         travel_response = None
 
     travel_from_db = TravelDestination.objects.values('country', 'name', 'keyword', 'latitude', 'longitude', 'id')
-    recommendations = ai1(travel_response, travel_from_db)
+
+    matching_country_travels = [travel for travel in travel_from_db if
+                                travel['country'] == travel_response.country
+                                or travel['country'] == '역사'
+                                or travel['country'] == '자연'
+                                or travel['country'] == 'SNS'
+                                or travel['country'] == '문화'
+                                or travel['country'] == '관광'
+                                or travel['country'] == '먹방']
+
+    recommendations = ai1(travel_response, matching_country_travels)
 
 
     return render(request, 'travel/recommend.html',
@@ -197,7 +176,6 @@ def recommend_view(request):
 def ai1(travel_response, travel_from_db):
     # QuerySet을 Pandas DataFrame으로 변환
     travels_df = pd.DataFrame(list(travel_from_db))
-    travel_duration = int(travel_response.duration.split('박')[0])
     # 한글 자연어 처리를 위한 형태소 분석기(Okt) 사용
     okt = Okt()
 
@@ -230,10 +208,11 @@ def ai1(travel_response, travel_from_db):
         group_size = travel_duration
         num_groups = len(travel_indices) // group_size
         recommended_groups = []
+        print(len(travel_indices))
         for i in range(num_groups):
             start_index = i * group_size
             end_index = (i + 1) * group_size
-            recommended_travels = travels_df[['country', 'keyword', 'name', 'latitude', 'longitude', 'id']].iloc[travel_indices[start_index:(i + 1) * group_size-1]]
+            recommended_travels = travels_df[['country', 'keyword', 'name', 'latitude', 'longitude']].iloc[travel_indices[start_index:(start_index+1)]]
             recommended_groups.append(recommended_travels)
         return recommended_groups
 
@@ -242,8 +221,8 @@ def ai1(travel_response, travel_from_db):
 
     # 여행 추천
     recommendations = recommend_travel_genre(input_travel, input_duration)
-    #print(f"Recommendations for {input_travel}:")
-    #print(recommendations[0])
+    print(f"Recommendations for {input_travel}:")
+    print(recommendations[0])
 
     return recommendations
 
@@ -311,8 +290,19 @@ def site_view(request, travel_id):
         travel_response = None
 
     travel_duration = int(travel_response.duration.split('박')[0])
+
     travel_from_db = TravelDestination.objects.values('country', 'name', 'keyword', 'latitude', 'longitude', 'id')
-    recommendations = ai(travel_response, travel_from_db)
+
+    matching_country_travels = [travel for travel in travel_from_db if
+                                travel['country'] == travel_response.country or travel['country'] == '역사'
+                                or travel['country'] == '자연'
+                                or travel['country'] == 'SNS'
+                                or travel['country'] == '문화'
+                                or travel['country'] == '관광'
+                                or travel['country'] == '먹방']
+
+    recommendations = ai(travel_response, matching_country_travels)
+
 
     result = recommendations[int(travel_id)-1]
     print(result.name)

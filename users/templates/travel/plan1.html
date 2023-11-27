@@ -1,5 +1,22 @@
 <!DOCTYPE html>
 <html lang="en">
+<style>
+    body {
+        background-image: url('/media/intro.jpg');
+        background-size: 100%;
+        background-repeat: no-repeat;
+        background-position: center center;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        font-family: Noto Sans;
+    }
+
+     label[for="country"] {
+        font-size: 1.2em; /* 예시로 크기 조절 */
+    }
+</style>
 
 <head>
     <meta charset="UTF-8">
@@ -84,44 +101,34 @@
         <h2>여행 추천</h2>
         <form method="post" action="{% url 'save_plan1' %}" onsubmit="return validateForm();">
             {% csrf_token %}
-            <!-- 1번째 질문: 여행 떠나고 싶은 중남미 나라 -->
-            <!-- 1번째 질문: 여행 떠나고 싶은 중남미 나라 -->
-<div class="form-group">
-    <label for="country">1. 여행 떠나고 싶은 중남미 나라:</label>
-    <div class="row">
-        <div class="col-md-3">
-            <div class="custom-control custom-radio">
-                <input type="radio" class="custom-control-input" name="country" value="아르헨티나" id="country1">
-                <label class="custom-control-label" for="country1">아르헨티나</label>
+            <!-- 1번째 질문: 여행 떠나고 싶은 중남미 나라: -->
+            <div class="form-group">
+                <label for="country">1. 여행 떠나고 싶은 중남미 나라:</label>
+                <div>
+                    <div class="custom-control custom-radio">
+                        <input type="radio" class="custom-control-input" name="country" value="아르헨티나" id="country1">
+                        <label class="custom-control-label" for="country1">아르헨티나</label>
+                    </div>
+                    <div class="custom-control custom-radio">
+                        <input type="radio" class="custom-control-input" name="country" value="브라질" id="country2">
+                        <label class="custom-control-label" for="country2">브라질</label>
+                    </div>
+                    <div class="custom-control custom-radio">
+                        <input type="radio" class="custom-control-input" name="country" value="멕시코" id="country3">
+                        <label class="custom-control-label" for="country3">멕시코</label>
+                    </div>
+                    <div class="custom-control custom-radio">
+                        <input type="radio" class="custom-control-input" name="country" value="우루과이" id="country4">
+                        <label class="custom-control-label" for="country4">우루과이</label>
+                    </div>
+                    <!-- 필요에 따라 더 많은 라디오 버튼 추가 -->
+                </div>
             </div>
-        </div>
-        <div class="col-md-3">
-            <div class="custom-control custom-radio">
-                <input type="radio" class="custom-control-input" name="country" value="브라질" id="country2">
-                <label class="custom-control-label" for="country2">브라질</label>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="custom-control custom-radio">
-                <input type="radio" class="custom-control-input" name="country" value="멕시코" id="country3">
-                <label class="custom-control-label" for="country3">멕시코</label>
-            </div>
-        </div>
-         <div class="col-md-3">
-            <div class="custom-control custom-radio">
-                <input type="radio" class="custom-control-input" name="country" value="가이아나" id="country4">
-                <label class="custom-control-label" for="country4">가이아나</label>
-            </div>
-        </div>
-        <!-- 필요에 따라 더 많은 열을 추가하세요 -->
-    </div>
-</div>
-
             <button type="submit" class="btn btn-primary">이동</button>
         </form>
     </div>
 
-    <script>
+     <script>
         function validateForm() {
             var radioGroups = document.querySelectorAll('input[type="radio"]:checked');
 
