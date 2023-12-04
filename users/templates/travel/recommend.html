@@ -17,9 +17,11 @@
             font-family: Noto Sans;
             margin: 0;
         }
+
         label {
             font-size: 1.2em;
         }
+
         .container {
             border: 2px solid #000;
             border-radius: 10px;
@@ -36,10 +38,10 @@
     <div class="collapse navbar-collapse" id="navbarCollapse">
         <div class="navbar-nav ml-auto">
             {% if user.is_authenticated %}
-            <a href="{% url 'users-profile' %}" class="nav-item nav-link">마이프로필</a>
-            <a href="{% url 'logout' %}" class="nav-item nav-link">로그아웃</a>
+                <a href="{% url 'users-profile' %}" class="nav-item nav-link">마이프로필</a>
+                <a href="{% url 'logout' %}" class="nav-item nav-link">로그아웃</a>
             {% else %}
-            <a href="{% url 'login' %}" class="nav-item nav-link">로그인</a>
+                <a href="{% url 'login' %}" class="nav-item nav-link">로그인</a>
             {% endif %}
         </div>
     </div>
@@ -54,22 +56,23 @@
             {% for group in recommendations %}
                 <div class="card-group">
                     <a href="recommend/{{ forloop.counter }}">
-                        {% for index, row in group.iterrows %}
-
-                            <!-- 여행지와 여행 일정 카드 -->
-                            <div class="card">
-                                <div class="card-body">
-                                    <h5 class="card-title">{{ row.name }}</h5>
-                                    <p class="card-text">{{ travel_response.duration }}</p>
-                                    <p class="card-text">{{ row.keyword }}</p>
-                                    <!-- 다른 필드들도 필요에 따라 출력 -->
-                                </div>
+                        <!-- 여행지와 여행 일정 카드 -->
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title">{{ group.name }}</h5>
+                                <p class="card-text">{{ travel_response.duration }}</p>
+                                <p class="card-text">{{ group.keyword }}</p>
+                                <!-- 다른 필드들도 필요에 따라 출력 -->
                             </div>
-                            </a>
-                        {% endfor %}
+                        </div>
+                    </a>
+
                 </div>
             {% endfor %}
         {% endif %}
+
+
+
 
         <h3>추천 받은 일정</h3>
         {% if travel_response %}
@@ -78,9 +81,9 @@
                 <div class="card-body">
                     <p class="card-text"><strong>국가:</strong> {{ travel_response.country }}</p>
                     <p class="card-text"><strong>기간:</strong> {{ travel_response.duration }}</p>
-                    <p class="card-text"><strong>동행자:</strong> {{ travel_response.companions }}</p>
+                    <p class="card-text"><strong>동행자:</strong> {{ travel_response.companion }}</p>
                     <p class="card-text"><strong>여행 스타일:</strong> {{ travel_response.travel_style }}</p>
-                    <p class="card-text"><strong>여행 일정:</strong> {{ travel_response.travel_schedule }}</p>
+                    <p class="card-text"><strong>나이대:</strong> {{ travel_response.age }}</p>
                 </div>
             </div>
         {% else %}

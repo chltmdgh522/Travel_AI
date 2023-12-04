@@ -32,9 +32,9 @@ class TravelResponse(models.Model):
     duration = models.CharField(max_length=255)
     departure_date = models.DateField(null=True)
     arrival_date = models.DateField(null=True)
-    companions = models.CharField(max_length=255)
+    companion = models.CharField(max_length=255)
     travel_style = models.CharField(max_length=255)
-    travel_schedule = models.CharField(max_length=255)
+    age = models.CharField(max_length=255)
 
     def __str__(self):
         return f'{self.user.username} - {self.country} - {self.duration} -{self.departure_date} - {self.arrival_date} - {self.companions} - {self.travel_style} - {self.travel_schedule}'
@@ -49,3 +49,14 @@ class TravelDestination(models.Model):
 
     def __str__(self):
         return self.name
+class SurveyData(models.Model):
+    country = models.CharField(max_length=255)
+    destination = models.CharField(max_length=255)
+    preference = models.IntegerField()
+    gender = models.CharField(max_length=10)
+    companion = models.CharField(max_length=255)
+    age = models.CharField(max_length=255)
+
+
+
+

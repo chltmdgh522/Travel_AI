@@ -11,6 +11,9 @@ from django.contrib import messages
 from django.contrib.messages.views import SuccessMessageMixin
 from django.views import View
 from django.contrib.auth.decorators import login_required
+from sklearn.linear_model import LogisticRegression
+
+from .models import SurveyData
 from .models import TravelResponse
 from .models import TravelDestination
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -113,7 +116,6 @@ def travel_view(request):
 
     recommendations = ai1(travel_response, matching_country_travels)
 
-
     return render(request, 'travel/travel.html',
                   {'travel_response': travel_response, 'recommendations': recommendations})
 
@@ -146,6 +148,85 @@ def travel_view(request):
 #                   {'travel_response': travel_response, 'selected_rows': selected_rows})
 
 
+def modelAi(user_response):
+    # 사용자가 선택한 여행 응답
+    user_response = {
+        'country': user_response.country,
+        'companion': user_response.companion,
+        'age': user_response.age,
+        'preference': 0,
+        'destination': ''
+    }
+
+    # 사용자 응답을 특성으로 가지는 데이터 생성
+    user_data = [
+        [user_response['country'], user_response['companion'], user_response['age'],
+         user_response['preference'], user_response['destination']]
+    ]
+
+    # 데이터프레임 생성
+    columns = ['country', 'companion', 'age', 'preference', 'destination']
+    user_df = pd.DataFrame(user_data, columns=columns)
+
+    # 원핫 인코딩
+    user_df_encoded = pd.get_dummies(user_df, columns=[
+        'country', 'companion', 'age', 'preference', 'destination'])
+    user_df_encoded = user_df_encoded.astype(int)
+
+    # survey 모델에서 데이터 가져오기
+    survey_data = SurveyData.objects.all()
+
+    # 가져온 데이터를 전처리하여 특성과 레이블로 분리
+    processed_data = []
+
+    for entry in survey_data:
+        processed_row = {
+            'country': entry.country,
+            'destination': entry.destination,
+            'age': entry.age,
+            'companion': entry.companion,
+            'preference': entry.preference,
+        }
+        processed_data.append(processed_row)
+
+    X = pd.DataFrame(processed_data, columns=[
+        'country', 'destination', 'age', 'companion', 'preference'])
+    y = (X['preference'] >= 3).astype(int)  # preference가 3 이상인 경우 1, 아니면 0으로 변환
+
+    # 원핫 인코딩 적용
+    X_encoded = pd.get_dummies(
+        X, columns=['country', 'destination', 'age', 'companion'])
+    X_encoded = X_encoded.astype(int)
+
+    # 모델 초기화 및 학습
+    model = LogisticRegression()
+    model.fit(X_encoded, y)
+
+    matching_columns = [
+        col for col in X_encoded.columns if col in user_df_encoded.columns]
+
+    # 사용자 데이터에서 필요한 열만 선택
+    user_df_encoded_subset = user_df_encoded[matching_columns]
+
+    # 모델에 학습된 데이터와 사용자 데이터 일치 여부 확인
+    is_matching = X_encoded.eq(user_df_encoded_subset.iloc[0]).sum(axis=1) >= 3
+
+    # 일치하는 경우에만 preference가 3 이상인 결과 출력
+    matched_indices = is_matching[is_matching].index
+
+    matched_data_from_model = X_encoded.loc[matched_indices]
+
+    original_values = set()  # 중복을 허용하지 않는 set으로 변경
+
+    for index, row in matched_data_from_model.iterrows():
+        current_original_value = set()  # 현재 행에 대한 set을 초기화
+        for column in matched_data_from_model.columns:
+            if column.startswith('destination_') and row[column] == 1:
+                current_original_value.add(column.split('_')[1])
+        original_values.update(current_original_value)  # 현재 행의 set을 전체 set에 추가
+
+    return list(original_values)  # set을 다시 리스트로 변환
+
 
 @login_required
 def recommend_view(request):
@@ -154,6 +235,10 @@ def recommend_view(request):
     except TravelResponse.DoesNotExist:
         # 사용자에 대한 TravelResponse가 없는 경우 처리
         travel_response = None
+
+    survey_data = modelAi(travel_response)
+
+    print(survey_data)
 
     travel_from_db = TravelDestination.objects.values('country', 'name', 'keyword', 'latitude', 'longitude', 'id')
 
@@ -167,10 +252,27 @@ def recommend_view(request):
                                 or travel['country'] == '먹방']
 
     recommendations = ai1(travel_response, matching_country_travels)
+    print("dd")
+    # 데이터프레임 생성
+    # 여러 데이터프레임을 저장할 빈 데이터프레임 생성
+    result_df = pd.DataFrame(columns=['name', 'age', 'country'])  # 필요한 열을 추가
+    result=[]
+    for df in recommendations:
+        for index, row in df.iterrows():
+            for a in survey_data:
+                if row['name'] == a:
+                    result.append(row)
 
+    # 결과 데이터프레임 생성
+    result_df = pd.DataFrame(result)
+    rows = result_df.to_dict(orient='records')
+    for row in rows:
+        print("1")
+        print(row['name'])
 
+    # 템플릿에 전달할 컨텍스트 생성
     return render(request, 'travel/recommend.html',
-                  {'travel_response': travel_response, 'recommendations': recommendations})
+                  {'travel_response': travel_response, 'recommendations': rows})
 
 
 def ai1(travel_response, travel_from_db):
@@ -208,12 +310,15 @@ def ai1(travel_response, travel_from_db):
         group_size = travel_duration
         num_groups = len(travel_indices) // group_size
         recommended_groups = []
-        print(len(travel_indices))
         for i in range(num_groups):
             start_index = i * group_size
             end_index = (i + 1) * group_size
-            recommended_travels = travels_df[['country', 'keyword', 'name', 'latitude', 'longitude']].iloc[travel_indices[start_index:(start_index+1)]]
+            recommended_travels = travels_df[['country', 'keyword', 'name', 'latitude', 'longitude']].iloc[
+                travel_indices[start_index:(start_index + 1)]]
+
             recommended_groups.append(recommended_travels)
+
+
         return recommended_groups
 
     input_travel = travel_response.travel_style
@@ -221,8 +326,6 @@ def ai1(travel_response, travel_from_db):
 
     # 여행 추천
     recommendations = recommend_travel_genre(input_travel, input_duration)
-    print(f"Recommendations for {input_travel}:")
-    print(recommendations[0])
 
     return recommendations
 
@@ -266,7 +369,8 @@ def ai(travel_response, travel_from_db):
         for i in range(num_groups):
             start_index = i * group_size
             end_index = (i + 1) * group_size
-            recommended_travels = travels_df[['country', 'keyword', 'name', 'latitude', 'longitude', 'id']].iloc[travel_indices[start_index:end_index]]
+            recommended_travels = travels_df[['country', 'keyword', 'name', 'latitude', 'longitude', 'id']].iloc[
+                travel_indices[start_index:end_index]]
             recommended_groups.append(recommended_travels)
         return recommended_groups
 
@@ -275,8 +379,8 @@ def ai(travel_response, travel_from_db):
 
     # 여행 추천
     recommendations = recommend_travel_genre(input_travel, input_duration)
-    #print(f"Recommendations for {input_travel}:")
-    #print(recommendations[0])
+    # print(f"Recommendations for {input_travel}:")
+    # print(recommendations[0])
 
     return recommendations
 
@@ -288,8 +392,6 @@ def site_view(request, travel_id):
     except TravelResponse.DoesNotExist:
         # 사용자에 대한 TravelResponse가 없는 경우 처리
         travel_response = None
-
-    travel_duration = int(travel_response.duration.split('박')[0])
 
     travel_from_db = TravelDestination.objects.values('country', 'name', 'keyword', 'latitude', 'longitude', 'id')
 
@@ -303,8 +405,7 @@ def site_view(request, travel_id):
 
     recommendations = ai(travel_response, matching_country_travels)
 
-
-    result = recommendations[int(travel_id)-1]
+    result = recommendations[int(travel_id) - 1]
     print(result.name)
 
     # 가져온 데이터를 템플릿으로 전달
@@ -397,10 +498,10 @@ def save_plan3(request):
         travel_response, created = TravelResponse.objects.get_or_create(user=request.user)
 
         # 폼 데이터 가져오기
-        companions = request.POST.get('companions')
+        companions = request.POST.get('companion')
 
         # TravelResponse 모델 업데이트
-        travel_response.companions = companions
+        travel_response.companion = companions
 
         # 업데이트된 모델 저장
         travel_response.save()
@@ -443,10 +544,10 @@ def save_plan5(request):
         travel_response, created = TravelResponse.objects.get_or_create(user=request.user)
 
         # 폼 데이터 가져오기
-        travel_schedule = request.POST.get('travel_schedule')
+        age = request.POST.get('age')
 
         # TravelResponse 모델 업데이트
-        travel_response.travel_schedule = travel_schedule
+        travel_response.age = age
 
         # 업데이트된 모델 저장
         travel_response.save()
