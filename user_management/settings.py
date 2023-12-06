@@ -81,21 +81,12 @@ TEMPLATES = [
 WSGI_APPLICATION = 'user_management.wsgi.application'
 
 
-# Database
-# https://docs.djangoproject.com/en/3.2/ref/settings/#databases
-# settings.py
-
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'travel',
-        'USER': 'root',
-        'PASSWORD': '0522',
-        'HOST': 'localhost',
-        'PORT': '3306',  # MySQL 기본 포트
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
-
 
 
 # Password validation
