@@ -1,103 +1,139 @@
 {% extends "users/base.html" %}
-{% block title %} Login Page {% endblock title%}
+{% block title %} Login Page {% endblock title %}
 {% block content %}
 
 <style>
-    /* 추가된 부분: 카드의 배경 색상에 투명도를 적용 */
+    /* 스타일 설정 */
     .card {
-        background-color: rgba(255, 255, 255, 0.4); /* 알파 값이 1에 가까울수록 불투명, 0에 가까울수록 투명 */
-        font-family: 'Your_Custom_Font', Noto Sans; /* 원하는 글씨체로 변경하세요 */
+        background-color: rgba(255, 255, 255, 0.4);
+        font-family: 'Your_Custom_Font', Noto Sans;
+        min-height: 91%; /* 카드의 최소 높이 설정 */
     }
 
-    /* 추가된 부분: 카드 헤더의 글자 크기를 크게 조절 */
     .card-header h3 {
-        font-size: 2em; /* 원하는 크기로 조절 */
+        font-size: 1.4em;
     }
 
-    /* 추가된 부분: 폼의 레이블과 입력 필드의 글자 크기를 크게 조절 */
     .form-group label, .form-group input {
-        font-size: 1.5em; /* 원하는 크기로 조절 */
-        border-color: #000; /* 테두리 색상을 검정색으로 지정 */
+        font-size: 1.2em;
+        border-color: #000;
     }
 
-    /* 수정된 부분: 로그인 버튼의 크기를 크게 조절 및 검정색으로 변경 */
     #login {
-        font-size: 1.5em; /* 원하는 크기로 조절 */
-        background-color: #000; /* 배경색을 검정색으로 지정 */
-        color: #fff; /* 텍스트 색상을 흰색으로 지정 */
-        border-color: #000; /* 테두리 색상을 검정색으로 지정 */
+        font-size: 1.3em;
+        background-color: #000;
+        color: #fff;
+        border-color: #000;
     }
 
-    /* 추가된 부분: 카드 푸터의 글자 크기를 크게 조절 */
     .card-footer .small {
-        font-size: 1.2em; /* 원하는 크기로 조절 */
+        font-size: 1.2em;
     }
 
-    /* 수정된 부분: 회원가입 및 비밀번호 찾기 링크의 색상을 검정색으로 변경 */
     .card-footer .small a {
-        color: #000; /* 링크 색상을 검정색으로 지정 */
+        color: #000;
+    }
+
+    /* 배경 이미지 설정 */
+    .bg-image {
+        width: 120vh;
+        height: 100vh;
+    }
+
+    body, html {
+        height: 100%; /* body와 html의 높이를 100%로 설정 */
+        overflow: hidden; /* 스크롤을 숨김 */
     }
 </style>
 
-<div class="card shadow-lg border-0 rounded-lg mt-0 mb-3">
-    <div class="card-header justify-content-center">
-        <h3 class="font-weight-light my-1 text-center">login</h3>
+<div class="row no-gutters">
+    <!-- 좌측: 배경 사진 -->
+    <div class="col-md-8 bg-image">
+        <div id="carouselExampleIndicators" class="carousel slide h-100" data-ride="carousel">
+            <div class="carousel-inner h-100">
+                <div class="carousel-item active h-100">
+                    <img class="d-block w-100 h-100" src="/media/trip1.jpg" alt="First slide">
+                </div>
+                <div class="carousel-item h-100">
+                    <img class="d-block w-100 h-100" src="/media/trip2.jpg" alt="Second slide">
+                </div>
+                <div class="carousel-item h-100">
+                    <img class="d-block w-100 h-100" src="/media/trip3.jpg" alt="Third slide">
+                </div>
+            </div>
+            <a class="carousel-control-prev" href="#carouselExampleIndicators" role="button" data-slide="prev">
+                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                <span class="sr-only">Previous</span>
+            </a>
+            <a class="carousel-control-next" href="#carouselExampleIndicators" role="button" data-slide="next">
+                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                <span class="sr-only">Next</span>
+            </a>
+        </div>
     </div>
-    {% if form.errors %}
+
+    <!-- 우측: 로그인 폼 -->
+
+    <div class="card shadow-lg border-0 rounded-lg mt-5 mb-3">
+        <div class="card-header justify-content-center">
+            <h3 class="font-weight-light my-1 text-center">로그인</h3>
+        </div>
+        {% if form.errors %}
         <div class="alert alert-danger alert-dismissible" role="alert">
             <div id="form_errors">
                 {% for key, value in form.errors.items %}
-                    <strong>{{ value }}</strong>
+                <strong>{{ value }}</strong>
                 {% endfor %}
             </div>
             <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                 <span aria-hidden="true">&times;</span>
             </button>
         </div>
-    {% endif %}
-    <div class="card-body">
-        <form method="POST">
-            {% csrf_token %}
-            <div class="form-row">
-                <div class="col-md-10 offset-md-1">
-                    <div class="form-group">
-                        <label class="small mb-1">ID</label>
-                        {{ form.username }}
+        {% endif %}
+        <div class="card-body">
+            <form method="POST">
+                {% csrf_token %}
+                <div class="form-row">
+                    <div class="col-md-10 offset-md-1">
+                        <div class="form-group">
+                            <label class="small mb-1">아이디</label>
+                            {{ form.username }}
+                        </div>
                     </div>
                 </div>
-            </div>
-            <div class="form-row">
-                <div class="col-md-10 offset-md-1">
-                    <div class="form-group">
-                        <label class="small mb-1">PASSWORD</label>
-                        {{ form.password }}
+                <div class="form-row">
+                    <div class="col-md-10 offset-md-1">
+                        <div class="form-group">
+                            <label class="small mb-1">비밀번호</label>
+                            {{ form.password }}
+                        </div>
                     </div>
                 </div>
-            </div>
-            <div class="form-row">
-                <div class="col-md-10 offset-md-1">
-                    <div class="form-group">
-                        <!-- Add a Remember me functionality -->
-                        {{ form.remember_me }}
-                        <label> save ID </label>
+                <div class="form-row">
+                    <div class="col-md-10 offset-md-1">
+                        <div class="form-group">
+                            {{ form.remember_me }}
+                            <label> 아이디 저장 </label>
+                        </div>
                     </div>
                 </div>
-            </div>
-            <div class="form-row">
-                <div class="col-md-10 offset-md-1">
-                    <div class="form-group mt-0 mb-1">
-                        <button name="login" class="col-md-12 btn btn-dark" id="login">login</button>
+                <div class="form-row">
+                    <div class="col-md-10 offset-md-1">
+                        <div class="form-group mt-0 mb-1">
+                            <button name="login" class="col-md-12 btn btn-dark" id="login">로그인</button>
+                        </div>
                     </div>
                 </div>
+            </form>
+        </div>
+        <div class="card-footer text-center">
+            <div class="small">
+                <a href="{% url 'users-register' %}">회원가입</a><br>
+                <a href="{% url 'password_reset' %}"><i>비밀번호를 잊어버리셨나요?</i></a>
             </div>
-        </form>
-    </div>
-    <div class="card-footer text-center">
-        <div class="small">
-            <a href="{% url 'users-register' %}">SIGN UP</a><br>
-            <a href="{% url 'password_reset' %}"><i>Forget password</i></a>
         </div>
     </div>
+
 </div>
 
 {% endblock content %}
