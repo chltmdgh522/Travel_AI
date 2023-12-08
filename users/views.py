@@ -26,7 +26,8 @@ from datetime import datetime
 
 def home(request):
     return render(request, 'users/home.html')
-
+def robby_view(request):
+    return render(request, 'users/robby.html')
 
 class RegisterView(View):
     form_class = RegisterForm
