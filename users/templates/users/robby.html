@@ -1,0 +1,115 @@
+{% extends 'users/base.html' %}
+{% block title %} Robby {% endblock title%}
+{% block content %}
+<style>
+         body {
+            background-image: url('/media/pic1.png');
+            background-size: 100%;
+            background-repeat: no-repeat;
+            background-position: center center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 90vh;
+            font-family: Arial, Noto Sans;
+        }
+
+
+
+        /* 다음은 추가적인 스타일 수정 */
+
+        /* Sign In 카드의 투명도 낮추기 */
+        .card {
+            background-color: rgba(255, 255, 255, 0.0);
+        }
+
+        /* Sign In 헤더의 투명도 낮추기 */
+        .card-header {
+            background-color: rgba(255, 255, 255, 0);
+        }
+
+        .card-body {
+            background-color: rgba(255, 255, 255, 0);
+        }
+
+        /* Sign In 푸터의 투명도 낮추기 */
+        .card-footer {
+            background-color: rgba(255, 255, 255, 0.0);
+        }
+
+        /* 폼 요소들의 투명도 낮추기 */
+        .form-group {
+            background-color: rgba(255, 255, 255, 0.0);
+        }
+
+        /* 기타 스타일 조절 */
+        .container form div,
+        .container form input {
+            background-color: rgba(255, 255, 255, 0.3);
+        }
+
+        /* 버튼의 투명도 낮추기 */
+        #login {
+            background-color: rgb(0, 0, 0);
+            color: white;
+        }
+
+        /* Navbar styling */
+        .navbar {
+        background-color: #f2f2f2; /* 변경된 부분: 연한 회색으로 조절 */
+        }
+
+        /* Navbar brand styling */
+        .navbar-brand {
+        font-size: 1.5rem;
+        color: #ffffff; /* 변경된 부분: 흰색으로 조절 */
+        }
+        .trip-love {
+        font-size: 18px;
+        color: white;
+        font-family: 'avenir-It-w01_35-light1475496', sans-serif;
+        width: 88px;
+        height: 21px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        }
+        .going-places {
+        font-size: 70px;
+        color: white;
+        font-family: 'avenir-It-w01_85-heavy1475544', sans-serif;
+        width: 423px;
+        height: 84px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        }
+        .my-list {
+        font-size: 18px;
+        color: white;
+        font-family: 'avenir-It-w01_35-light1475496', sans-serif;
+        text-align: center;
+        }
+        /* 추가적인 스타일링을 위한 CSS를 여기에 추가하세요 */
+        body {
+            padding-top: 50px;
+        }
+
+    </style>
+
+    <div class="d-flex flex-column justify-content-center align-items-center" style="height: 100vh;">
+        <div class="trip-love">LOVE TRIP</div>
+        <div class="going-places">Going Places</div>
+        <p class="my-list">I haven’t been everywhere, but it’s on my list</p>
+    </div>
+    {% if messages %}
+    <div class="alert alert-dismissible" role="alert">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+    {% endif %}
+{% endblock %}
