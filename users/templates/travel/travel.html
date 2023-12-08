@@ -29,103 +29,87 @@
 
 <body>
 
-    <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
-        <a class="navbar-brand" href="/">LOVE TRIP</a>
-        <div class="collapse navbar-collapse" id="navbarCollapse">
-            <div class="navbar-nav ml-auto">
-                {% if user.is_authenticated %}
-                <a href="{% url 'users-profile' %}" class="nav-item nav-link">마이프로필</a>
-                <a href="{% url 'logout' %}" class="nav-item nav-link">로그아웃</a>
-                {% else %}
-                <a href="{% url 'login' %}" class="nav-item nav-link">로그인</a>
-                {% endif %}
-            </div>
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+    <a class="navbar-brand" href="/">LOVE TRIP</a>
+    <div class="collapse navbar-collapse" id="navbarCollapse">
+        <div class="navbar-nav ml-auto">
+            {% if user.is_authenticated %}
+            <a href="{% url 'users-profile' %}" class="nav-item nav-link">마이프로필</a>
+            <a href="{% url 'logout' %}" class="nav-item nav-link">로그아웃</a>
+            {% else %}
+            <a href="{% url 'login' %}" class="nav-item nav-link">로그인</a>
+            {% endif %}
         </div>
-    </nav>
+    </div>
+</nav>
 
-    <!-- Content -->
+<!-- Content -->
 
-        <div class="container mt-5" style="background-color: rgba(255, 255, 255, 0.5);">
-            <div class="row">
-                <div class="col-md-6">
+<div class="container mt-5" style="background-color: rgba(255, 255, 255, 0.5);">
+    <div class="row">
+        <div class="col-md-6">
 
-                    <h2>추천 일정</h2>
-                    <div class="form-group" >
-                        <label for="scheduleInput">회원님 취향에 맞춰 상위3개 추천일정입니다!</label>
-                        <div class="card-deck">
-                            {% if recommendations.empty %}
-                                <p>추천된 여행지가 없습니다.</p>
-                            {% else %}
-                                {% for group in recommendations %}
-                                    <div class="card-group">
-                                        <a href="recommend/{{ forloop.counter }}">
-                                            {% for index, row in group.iterrows %}
+            <h2>추천 일정</h2>
+            <div class="form-group">
+                <label for="scheduleInput">회원님 취향에 맞춰 상위3개 추천일정입니다!</label>
+                <div class="card-deck">
+                    {% if recommendations.empty %}
+                    <p>추천된 여행지가 없습니다.</p>
+                    {% else %}
+                    {% for group in recommendations %}
+                    <div class="card-group">
+                        <a href="recommend/{{ forloop.counter }}">
+                            {% for index, row in group.iterrows %}
 
-                                                <!-- 여행지와 여행 일정 카드 -->
-                                                <div class="card" style="background-color: rgba(255, 255, 255, 0.9);">
-                                                    <div class="card-body">
-                                                        <h5 class="card-title">{{ row.country }}</h5>
-                                                        <p class="card-text">{{ travel_response.duration }}</p>
-                                                        <p class="card-text">{{ row.keyword }}</p>
-                                                        <!-- 다른 필드들도 필요에 따라 출력 -->
-                                                    </div>
-                                                </div>
-                                                </a>
-                                            {% endfor %}
-                                    </div>
-                                {% endfor %}
-                            {% endif %}
-                        </div>
-                    <h2>나의 일정</h2>
-
-
-                    <!-- 여기에 나의 일정 표시 추가 -->
-                    <div class="mt-4">
-                        <h3>현재 일정</h3>
-                        {% if travel_response %}
-                        <div class="card" style="background-color: rgba(255, 255, 255, 0.9);">
-                            <div class="card-body">
-                                <p class="card-text"><strong>국가:</strong> {{ travel_response.country }}</p>
-                                <p class="card-text"><strong>기간:</strong> {{ travel_response.duration }}</p>
-                                <p class="card-text"><strong>동행자:</strong> {{ travel_response.companion }}</p>
-                                <p class="card-text"><strong>여행 스타일:</strong> {{ travel_response.travel_style }}</p>
-                                <p class="card-text"><strong>연령대:</strong> {{ travel_response.age }}</p>
+                            <!-- 여행지와 여행 일정 카드 -->
+                            <div class="card" style="background-color: rgba(255, 255, 255, 0.9);">
+                                <div class="card-body">
+                                    <h5 class="card-title">{{ row.country }}</h5>
+                                    <p class="card-text">{{ travel_response.duration }}</p>
+                                    <p class="card-text">{{ row.keyword }}</p>
+                                    <!-- 다른 필드들도 필요에 따라 출력 -->
+                                </div>
                             </div>
-                        </div>
-                        {% else %}
-                        <p>일정이 없습니다.</p>
-                        {% endif %}
+                        </a>
+                        {% endfor %}
                     </div>
+                    {% endfor %}
+                    {% endif %}
+                </div>
+                <h2>나의 일정</h2>
 
+
+                <!-- 여기에 나의 일정 표시 추가 -->
+                <div class="mt-4">
+                    <h3>현재 일정</h3>
+                    {% if travel_response %}
+                    <div class="card" style="background-color: rgba(255, 255, 255, 0.9);">
+                        <div class="card-body">
+                            <p class="card-text"><strong>국가:</strong> {{ travel_response.country }}</p>
+                            <p class="card-text"><strong>기간:</strong> {{ travel_response.duration }}</p>
+                            <p class="card-text"><strong>동행자:</strong> {{ travel_response.companions }}</p>
+                            <p class="card-text"><strong>여행 스타일:</strong> {{ travel_response.travel_style }}</p>
+                            <p class="card-text"><strong>여행 일정:</strong> {{ travel_response.travel_schedule }}</p>
+                        </div>
+                    </div>
+                    {% else %}
+                    <p>일정이 없습니다.</p>
+                    {% endif %}
                 </div>
-                <div class="col-md-6">
-                    <h2>일정 추천</h2>
-                    <a class="btn btn-dark btn-lg" href="{% url 'plan1' %}" role="button">여행 추천</a>
-                </div>
+
             </div>
-
-            <div class="row mt-5">
-                <div class="col-md-12">
-                    <h2>중남미 국가 국기</h2>
-                    <div class="row">
-                        <div class="col-md-3 mb-3">
-                            <img src="url/to/flag-image-1.jpg" class="img-fluid" alt="국기 1">
-                        </div>
-                        <div class="col-md-3 mb-3">
-                            <img src="url/to/flag-image-2.jpg" class="img-fluid" alt="국기 2">
-                        </div>
-                        <!-- 추가적인 국가 이미지를 필요에 따라 반복해서 추가하세요 -->
-                    </div>
-                </div>
+            <div class="col-md-6">
+                <h2>일정 추천</h2>
+                <a class="btn btn-dark btn-lg" href="{% url 'plan1' %}" role="button">여행 추천</a>
             </div>
         </div>
 
 
-    <!-- Bootstrap 스크립트 및 추가 스크립트를 불러옴 -->
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+        <!-- Bootstrap 스크립트 및 추가 스크립트를 불러옴 -->
+        <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 
 </body>
 
