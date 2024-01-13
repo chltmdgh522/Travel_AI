@@ -1,5 +1,5 @@
-![image](https://github.com/chltmdgh522/Travel_AI/assets/74850409/4901515d-92d3-49cd-b75c-6f95357e25e2)# Travel_Project
-스프링 부트 + MySql
+#Travel_Project
+쟝고 + MySql
 
 
 ## 🖥️ 시연 화면
