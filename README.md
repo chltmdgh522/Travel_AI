@@ -1,29 +1,30 @@
-#Travel_Project
-쟝고 + MySql
+# 🌠🥇Travel_Project🥇🌠
+
+
 
 
 ## 🖥️ 시연 화면
 https://youtu.be/jTv9dnZsMHU?si=Wh4IGrgmM7nrS1gb
 
 
-## 🖥 실행법
+## 📖실행법
 
-1. 프로젝트 의존성 설치 : 
+1.프로젝트 의존성 설치 :
 - 필요한 라이브러리를 설치하기 위해 터미널에서 pip install -r requirements.txt 명령어를 실행합니다.
--  pip install scikit-learn pip install pandas pip install konlpy 3개를 설치합니다.
+- pip install scikit-learn pip install pandas pip install konlpy 3개를 설치합니다.
 
-2. 사용자 계정을 만듭니다.
-python manage.py createsuperuser
+2.사용자 계정을 만듭니다.
+- python manage.py createsuperuser
 
 3.서버 실행
-manage.py 파일이 있는 디렉토리에서 터미널을 열어 다음 명령어를 실행합니다.
-명령어 : python manage.py runserver
+- manage.py 파일이 있는 디렉토리에서 터미널을 열어 다음 명령어를 실행합니다.
+- 명령어 : python manage.py runserver
 
 4.웹 페이지 접속:
-웹 브라우저에서 http://localhost:8000 주소로 접속하여 중남미 여행 타입에 따른 관광지 추천 웹 페이지를 이용할 수 있습니다.
+- 웹 브라우저에서 http://localhost:8000 주소로 접속하여 중남미 여행 타입에 따른 관광지 추천 웹 페이지를 이용할 수 있습니다.
 
 
-## 🖥️ 프로젝트 소개 및 목적
+## 😊 프로젝트 소개 및 목적
 - AI를 활용한 여행추천 사이트입니다.
 - 중남미 권역에 관심있는 여행객들에게 여행 타입별로 다양한 관광지를 추천하여 풍부한 여행 경험을 제공하는 것을 목적으로 합니다.
 - 사용자의 여행 선호도를 고려하여 맞춤형 여행 일정과 관광지 정보를 제공하여 사용자의 만족도를 높이는 것을 목표로 합니다.
@@ -41,10 +42,10 @@ manage.py 파일이 있는 디렉토리에서 터미널을 열어 다음 명령�
  - 팀원: 석재민 - AI 기능 
  - 팀원: 임지현 - 보고서 작성
 ### ⚙️ 개발 환경
-- `python 3.3`
+- **Language** : `python 3.3`
 - **Framework** : Django
 - **Database** : MySql
-- **ORM** 
+- **AI** : TensorFlow, PyTorch, Keras 
 - **IDE** :  Pycharm
 
 ## 🌠 시스템 구조
