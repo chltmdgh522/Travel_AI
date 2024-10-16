@@ -33,7 +33,7 @@ https://www.youtube.com/watch?v=XFyNGBKkaUE
 <br>
 
 ## 🕰️ 개발 기간
-* 23.09.03일 - 23.12.11일
+* 23.09.03 - 23.12.11
 
 ### 🧑‍🤝‍🧑 맴버구성
  - 팀장: 최승호 - 서버 및 AI 개발
@@ -42,9 +42,9 @@ https://www.youtube.com/watch?v=XFyNGBKkaUE
  - 팀원: 석재민 - AI 개발 
  - 팀원: 임지현 - 기획
 ### ⚙️ 개발 환경
-- **Language** : `python 3.3`
-- **Framework** : Django
-- **Database** : MySql
+- **Language** : python 3.7
+- **Framework** : Django 4.X
+- **Database** : MySql 8.X
 - **AI** : TensorFlow, PyTorch, Keras 
 - **IDE** :  Pycharm
 
@@ -62,9 +62,10 @@ https://www.youtube.com/watch?v=XFyNGBKkaUE
 - 프로필, 이름, 소개 변경
   
 #### AI 추천 기능 
-- 사용자 응답 처리(사전에 설문조사 폼 만들어서 25000개의 데이터 처)
+- 사용자 응답 처리(사전에 설문조사 폼 만들어서 20000개의 데이터 처리)
 - 데이터 전처리
-- 딥러닝 모델 학습
+- 오버 샘플링 기법 활용
+- 딥러닝 모델 학습 (정확도 66% 에서 82%로 향상)
 - 사용자 데이터 일치 여부 확인
 
 #### 구글맵 API
